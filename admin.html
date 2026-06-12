@@ -278,7 +278,7 @@
             <img id="previewFoto" class="preview-foto" src="" alt="Pratinjau Foto" style="display:none;">
 
             <div class="tombol-grup">
-                <button class="btn btn-utama" onclick="simpanKaryawan()">💾 Simpan Data</button>
+                <button class="btn btn-utama" id="tombolSimpan" onclick="simpanKaryawan()">💾 Simpan Data</button>
                 <button class="btn btn-reset" onclick="resetForm()">🔄 Kosongkan</button>
             </div>
         </div>
@@ -379,6 +379,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
 <script>
+// Konfigurasi Firebase
 const config = {
     apiKey: "AIzaSyCMUw8KwCeSNY41i5EmmqKexzLp5RRMNoY",
     authDomain: "daftar-absen-cc868.firebaseapp.com",
@@ -388,7 +389,10 @@ const config = {
     appId: "1:486404759637:web:120404fde3e0c1f1d0b4dc"
 };
 
-if (!firebase.apps.length) firebase.initializeApp(config);
+// Inisialisasi Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(config);
+}
 const db = firebase.database();
 const storage = firebase.storage();
 
@@ -444,66 +448,123 @@ function unduhCSV(namaFile, konten) {
     document.body.removeChild(link);
 }
 
-// --- Simpan / Edit Karyawan dengan Foto ---
+// ✅ FUNGSI SIMPAN KARYAWAN YANG SUDAH DIPERBAIKI
 function simpanKaryawan() {
-    const kunci = document.getElementById("kunciEdit").value;
+    const tombol = document.getElementById('tombolSimpan');
+    tombol.disabled = true;
+    tombol.textContent = "⏳ Menyimpan...";
+
+    // Ambil nilai input
+    const kunci = document.getElementById("kunciEdit").value.trim();
     const nama = document.getElementById("namaKaryawan").value.trim();
     const hp = document.getElementById("hpKaryawan").value.trim();
     const sandi = document.getElementById("sandiKaryawan").value.trim();
     const fileFoto = document.getElementById("fotoKaryawan").files[0];
-    let urlFotoLama = "";
 
+    // Validasi input
     if (!nama || !hp || !sandi) {
-        alert("Semua kolom harus diisi!");
+        alert("❌ Semua kolom harus diisi!");
+        tombol.disabled = false;
+        tombol.textContent = "💾 Simpan Data";
         return;
     }
 
-    // Jika mode edit
-    if (kunci) {
-        db.ref(`data_karyawan/${kunci}`).once("value").then(snap => {
+    // Jika mode TAMBAH BARU
+    if (!kunci) {
+        if (!fileFoto) {
+            alert("❌ Silakan pilih foto karyawan terlebih dahulu!");
+            tombol.disabled = false;
+            tombol.textContent = "💾 Simpan Data";
+            return;
+        }
+
+        // Cek nomor HP sudah terdaftar atau belum
+        db.ref("data_karyawan").orderByChild("hp").equalTo(hp).once("value")
+        .then(snap => {
+            if (snap.exists()) {
+                alert("❌ Nomor HP sudah terdaftar!");
+                tombol.disabled = false;
+                tombol.textContent = "💾 Simpan Data";
+                return;
+            }
+
+            // Unggah foto ke Firebase Storage
+            const namaFile = `foto_karyawan/${Date.now()}_${nama.replace(/\s/g, '_')}.jpg`;
+            const refFoto = storage.ref(namaFile);
+            
+            return refFoto.put(fileFoto);
+        })
+        .then(hasilUnggah => {
+            return hasilUnggah.ref.getDownloadURL();
+        })
+        .then(urlFoto => {
+            // Simpan data ke database
+            return db.ref("data_karyawan").push({
+                nama: nama,
+                hp: hp,
+                sandi: sandi,
+                foto: urlFoto
+            });
+        })
+        .then(() => {
+            alert("✅ Data karyawan berhasil disimpan!");
+            resetForm();
+            tampilkanHalaman('dataKaryawan');
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("❌ Gagal menyimpan: " + error.message);
+        })
+        .finally(() => {
+            tombol.disabled = false;
+            tombol.textContent = "💾 Simpan Data";
+        });
+    }
+    // Jika mode EDIT
+    else {
+        let urlFotoLama = "";
+        db.ref(`data_karyawan/${kunci}`).once("value")
+        .then(snap => {
             const dataLama = snap.val();
             urlFotoLama = dataLama.foto || "";
 
+            // Jika ada foto baru
             if (fileFoto) {
-                const namaFile = `foto_karyawan/${Date.now()}_${fileFoto.name}`;
-                const ref = storage.ref(namaFile);
-                ref.put(fileFoto).then(() => ref.getDownloadURL()).then(url => {
-                    db.ref(`data_karyawan/${kunci}`).update({ nama, hp, sandi, foto: url });
-                    alert("✅ Data diperbarui!");
-                    resetForm();
-                    tampilkanHalaman('dataKaryawan');
-                });
+                const namaFile = `foto_karyawan/${Date.now()}_${nama.replace(/\s/g, '_')}.jpg`;
+                return storage.ref(namaFile).put(fileFoto);
             } else {
-                db.ref(`data_karyawan/${kunci}`).update({ nama, hp, sandi, foto: urlFotoLama });
-                alert("✅ Data diperbarui!");
-                resetForm();
-                tampilkanHalaman('dataKaryawan');
+                return null;
             }
-        });
-        return;
-    }
-
-    // Mode tambah baru
-    db.ref("data_karyawan").orderByChild("hp").equalTo(hp).once("value", snap => {
-        if (snap.exists()) {
-            alert("Nomor HP sudah terdaftar!");
-            return;
-        }
-
-        if (!fileFoto) {
-            alert("Silakan pilih foto karyawan!");
-            return;
-        }
-
-        const namaFile = `foto_karyawan/${Date.now()}_${fileFoto.name}`;
-        const ref = storage.ref(namaFile);
-        ref.put(fileFoto).then(() => ref.getDownloadURL()).then(url => {
-            db.ref("data_karyawan").push({ nama, hp, sandi, foto: url });
-            alert("✅ Data berhasil ditambahkan!");
+        })
+        .then(hasilUnggah => {
+            if (hasilUnggah) {
+                return hasilUnggah.ref.getDownloadURL();
+            } else {
+                return urlFotoLama;
+            }
+        })
+        .then(urlFotoFinal => {
+            return db.ref(`data_karyawan/${kunci}`).update({
+                nama: nama,
+                hp: hp,
+                sandi: sandi,
+                foto: urlFotoFinal
+            });
+        })
+        .then(() => {
+            alert("✅ Data berhasil diperbarui!");
             resetForm();
             tampilkanHalaman('dataKaryawan');
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("❌ Gagal memperbarui: " + error.message);
+        })
+        .finally(() => {
+            tombol.disabled = false;
+            tombol.textContent = "💾 Simpan Data";
         });
-    });
+    }
 }
 
 function editKaryawan(kunci, data) {
@@ -580,7 +641,7 @@ function unduhDataKaryawan() {
     });
 }
 
-// --- Fungsi Riwayat Absen (SUDAH DIPERBARUI) ---
+// --- Fungsi Riwayat Absen ---
 function muatRiwayatAbsen() {
     db.ref("riwayat_absen").orderByKey().limitToLast(100).once("value", snap => {
         const data = snap.val() || {};
@@ -590,13 +651,9 @@ function muatRiwayatAbsen() {
         } else {
             Object.entries(data).reverse().forEach(([kunci, d]) => {
                 const status = d.status === "Masuk" ? "status-masuk" : "status-pulang";
-                
-                // Tampilkan lokasi dengan tautan ke Google Maps
                 const lokasi = (d.lat && d.lon) 
                     ? `<a href="https://www.google.com/maps?q=${d.lat},${d.lon}" target="_blank" class="link-peta">Lihat di Google Maps</a>` 
                     : "-";
-                
-                // Tampilkan foto absen langsung di tabel
                 const foto = d.foto 
                     ? `<img src="${d.foto}" class="foto-absen" alt="Foto Absen" onclick="window.open('${d.foto}','_blank')" title="Klik untuk memperbesar">` 
                     : "-";
