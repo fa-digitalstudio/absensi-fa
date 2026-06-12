@@ -144,10 +144,22 @@
             font-size: 15px;
             background: var(--putih);
         }
+        input[type="file"] {
+            padding: 8px;
+        }
         input:focus {
             outline: none;
             border-color: var(--utama);
             box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
+        }
+        .preview-foto {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--batas);
+            margin: 8px 0;
+            display: block;
         }
 
         /* Tabel */
@@ -185,6 +197,13 @@
         /* Status & Foto */
         .status-masuk { color: var(--hijau); font-weight: 500; }
         .status-pulang { color: var(--kuning); font-weight: 500; }
+        .foto-karyawan {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--batas);
+        }
         .foto-absen {
             width: 50px;
             height: 50px;
@@ -249,6 +268,11 @@
             <input type="text" id="namaKaryawan" placeholder="Nama Lengkap" required>
             <input type="text" id="hpKaryawan" placeholder="Nomor HP" required>
             <input type="password" id="sandiKaryawan" placeholder="Kata Sandi" required>
+            
+            <label>Foto Karyawan:</label>
+            <input type="file" id="fotoKaryawan" accept="image/*" onchange="tampilkanPreview(this)">
+            <img id="previewFoto" class="preview-foto" src="" alt="Pratinjau Foto" style="display:none;">
+
             <div class="tombol-grup">
                 <button class="btn btn-utama" onclick="simpanKaryawan()">💾 Simpan Data</button>
                 <button class="btn btn-reset" onclick="resetForm()">🔄 Kosongkan</button>
@@ -269,13 +293,14 @@
                     <thead>
                         <tr>
                             <th>No</th>
+                            <th>Foto</th>
                             <th>Nama Lengkap</th>
                             <th>Nomor HP</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabelKaryawan">
-                        <tr><td colspan="4" class="kosong">Belum ada data karyawan</td></tr>
+                        <tr><td colspan="5" class="kosong">Belum ada data karyawan</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -347,6 +372,7 @@
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
 <script>
 const config = {
@@ -354,11 +380,13 @@ const config = {
     authDomain: "daftar-absen-cc868.firebaseapp.com",
     databaseURL: "https://daftar-absen-cc868-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "daftar-absen-cc868",
+    storageBucket: "daftar-absen-cc868.appspot.com", // <-- Tambahkan ini
     appId: "1:486404759637:web:120404fde3e0c1f1d0b4dc"
 };
 
 if (!firebase.apps.length) firebase.initializeApp(config);
 const db = firebase.database();
+const storage = firebase.storage();
 
 // --- Fungsi Menu & Halaman ---
 function bukaMenu() {
@@ -383,6 +411,22 @@ function logoutAdmin() {
     }
 }
 
+// --- Pratinjau Foto ---
+function tampilkanPreview(input) {
+    const preview = document.getElementById('previewFoto');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.src = "";
+        preview.style.display = 'none';
+    }
+}
+
 // --- Fungsi Bantu: Unduh CSV ---
 function unduhCSV(namaFile, konten) {
     const blob = new Blob([konten], { type: 'text/csv;charset=utf-8;' });
@@ -396,35 +440,61 @@ function unduhCSV(namaFile, konten) {
     document.body.removeChild(link);
 }
 
-// --- Fungsi Tambah / Edit / Hapus Karyawan ---
+// --- Simpan / Edit Karyawan dengan Foto ---
 function simpanKaryawan() {
     const kunci = document.getElementById("kunciEdit").value;
     const nama = document.getElementById("namaKaryawan").value.trim();
     const hp = document.getElementById("hpKaryawan").value.trim();
     const sandi = document.getElementById("sandiKaryawan").value.trim();
+    const fileFoto = document.getElementById("fotoKaryawan").files[0];
+    let urlFotoLama = "";
 
     if (!nama || !hp || !sandi) {
         alert("Semua kolom harus diisi!");
         return;
     }
 
-    if(kunci) {
-        db.ref(`data_karyawan/${kunci}`).update({nama, hp, sandi})
-        .then(() => {
-            alert("✅ Data diperbarui!");
-            resetForm();
-            tampilkanHalaman('dataKaryawan');
+    // Jika mode edit
+    if (kunci) {
+        db.ref(`data_karyawan/${kunci}`).once("value").then(snap => {
+            const dataLama = snap.val();
+            urlFotoLama = dataLama.foto || "";
+
+            if (fileFoto) {
+                const namaFile = `foto_karyawan/${Date.now()}_${fileFoto.name}`;
+                const ref = storage.ref(namaFile);
+                ref.put(fileFoto).then(() => ref.getDownloadURL()).then(url => {
+                    db.ref(`data_karyawan/${kunci}`).update({ nama, hp, sandi, foto: url });
+                    alert("✅ Data diperbarui!");
+                    resetForm();
+                    tampilkanHalaman('dataKaryawan');
+                });
+            } else {
+                db.ref(`data_karyawan/${kunci}`).update({ nama, hp, sandi, foto: urlFotoLama });
+                alert("✅ Data diperbarui!");
+                resetForm();
+                tampilkanHalaman('dataKaryawan');
+            }
         });
         return;
     }
 
+    // Mode tambah baru
     db.ref("data_karyawan").orderByChild("hp").equalTo(hp).once("value", snap => {
         if (snap.exists()) {
             alert("Nomor HP sudah terdaftar!");
             return;
         }
-        db.ref("data_karyawan").push({nama, hp, sandi})
-        .then(() => {
+
+        if (!fileFoto) {
+            alert("Silakan pilih foto karyawan!");
+            return;
+        }
+
+        const namaFile = `foto_karyawan/${Date.now()}_${fileFoto.name}`;
+        const ref = storage.ref(namaFile);
+        ref.put(fileFoto).then(() => ref.getDownloadURL()).then(url => {
+            db.ref("data_karyawan").push({ nama, hp, sandi, foto: url });
             alert("✅ Data berhasil ditambahkan!");
             resetForm();
             tampilkanHalaman('dataKaryawan');
@@ -438,13 +508,19 @@ function editKaryawan(kunci, data) {
     document.getElementById("namaKaryawan").value = data.nama;
     document.getElementById("hpKaryawan").value = data.hp;
     document.getElementById("sandiKaryawan").value = data.sandi;
+    if (data.foto) {
+        document.getElementById("previewFoto").src = data.foto;
+        document.getElementById("previewFoto").style.display = 'block';
+    } else {
+        document.getElementById("previewFoto").src = "";
+        document.getElementById("previewFoto").style.display = 'none';
+    }
     tampilkanHalaman('tambahKaryawan');
 }
 
 function hapusKaryawan(kunci) {
     if(!confirm("Yakin hapus data ini?")) return;
-    db.ref(`data_karyawan/${kunci}`).remove()
-    .then(() => {
+    db.ref(`data_karyawan/${kunci}`).remove().then(() => {
         alert("✅ Data dihapus!");
         muatDataKaryawan();
     });
@@ -456,6 +532,9 @@ function resetForm() {
     document.getElementById("namaKaryawan").value = "";
     document.getElementById("hpKaryawan").value = "";
     document.getElementById("sandiKaryawan").value = "";
+    document.getElementById("fotoKaryawan").value = "";
+    document.getElementById("previewFoto").src = "";
+    document.getElementById("previewFoto").style.display = 'none';
 }
 
 function muatDataKaryawan() {
@@ -463,12 +542,14 @@ function muatDataKaryawan() {
         const data = snap.val() || {};
         let html = "", no = 1;
         if (Object.keys(data).length === 0) {
-            html = "<tr><td colspan='4' class='kosong'>Belum ada data</td></tr>";
+            html = "<tr><td colspan='5' class='kosong'>Belum ada data</td></tr>";
         } else {
             Object.entries(data).forEach(([kunci, k]) => {
+                const foto = k.foto ? `<img src="${k.foto}" class="foto-karyawan" alt="Foto">` : `<div style="width:50px;height:50px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-size:10px">Tidak ada</div>`;
                 html += `
                 <tr>
                     <td>${no++}</td>
+                    <td>${foto}</td>
                     <td>${k.nama}</td>
                     <td>${k.hp}</td>
                     <td>
@@ -486,10 +567,10 @@ function muatDataKaryawan() {
 function unduhDataKaryawan() {
     db.ref("data_karyawan").once("value", snap => {
         const data = snap.val() || {};
-        let csv = "No,Nama Lengkap,Nomor HP\n";
+        let csv = "No,Nama Lengkap,Nomor HP,Link Foto\n";
         let no = 1;
         Object.values(data).forEach(k => {
-            csv += `${no++},"${k.nama}","${k.hp}"\n`;
+            csv += `${no++},"${k.nama}","${k.hp}","${k.foto || ''}"\n`;
         });
         unduhCSV(`Data_Karyawan_${new Date().toISOString().slice(0,10)}.csv`, csv);
     });
