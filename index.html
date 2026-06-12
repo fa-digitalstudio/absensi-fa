@@ -65,6 +65,8 @@
             transition: 0.3s; 
         }
         button:active { transform: scale(0.95); }
+        .btn-secondary { background: #95a5a6; }
+        .btn-danger { background: #e74c3c; }
         
         #preview { 
             width: 100%; 
@@ -202,6 +204,11 @@
             0% { transform: rotate(0deg); } 
             100% { transform: rotate(360deg); } 
         }
+
+        /* Halaman Login */
+        #loginSection { display: block; }
+        #mainSection { display: none; }
+        .info-text { text-align: center; color: #666; font-size: 13px; margin: 10px 0; }
     </style>
 </head>
 
@@ -217,24 +224,46 @@
             <div style='margin-top:10px; color:#e67e22; font-weight:bold;'>SEDANG PROSES...</div>
         </div>
 
-        <div class='card'>
-            <h2>ABSENSI &amp; LIVE TRACKING</h2>
-            <form id='formAbsen'>
-                <input id='nama' placeholder='Nama Lengkap' required='required' type='text'/>
-                <select id='status'>
-                    <option value='Hadir'>Hadir (On Bid)</option>
-                    <option value='Off'>Istirahat / Off</option>
-                </select>
-                <textarea id='keterangan' placeholder='Keterangan (Opsional)...'></textarea>
-                <input accept='image/*' capture='camera' id='inputFoto' required='required' type='file'/>
-                <img id='preview' src='' alt='Preview Foto'/>
-                <button type='submit'>KIRIM ABSENSI SEKARANG</button>
-            </form>
+        <!-- Bagian Login Karyawan -->
+        <div id="loginSection">
+            <div class="card">
+                <h2>LOGIN KARYAWAN</h2>
+                <p class="info-text">Masukkan nomor HP dan kata sandi yang sudah didaftarkan</p>
+                <input id="loginHp" placeholder="Nomor HP" type="text" required/>
+                <input id="loginPass" placeholder="Kata Sandi" type="password" required/>
+                <button onclick="loginKaryawan()">MASUK</button>
+            </div>
         </div>
 
-        <div class='list-container'>
-            <h3 style='font-size: 15px; border-bottom: 2px solid #eee; padding-bottom: 8px;'>Daftar Karyawan dan lokasi terkini</h3>
-            <div id='daftarAbsen'>Memuat data...</div>
+        <!-- Bagian Utama Absen (hanya tampil setelah login) -->
+        <div id="mainSection">
+            <div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:15px;">
+                <div>
+                    <b>Halo, <span id="namaPengguna"></span></b>
+                    <br><small>Anda sudah masuk</small>
+                </div>
+                <button class="btn-danger" onclick="logout()" style="width:auto; padding:8px 12px; font-size:12px;">KELUAR</button>
+            </div>
+
+            <div class='card'>
+                <h2>ABSENSI &amp; LIVE TRACKING</h2>
+                <form id='formAbsen'>
+                    <input id='nama' type='hidden'/>
+                    <select id='status'>
+                        <option value='Hadir'>Hadir (On Bid)</option>
+                        <option value='Off'>Istirahat / Off</option>
+                    </select>
+                    <textarea id='keterangan' placeholder='Keterangan (Opsional)...'></textarea>
+                    <input accept='image/*' capture='camera' id='inputFoto' required='required' type='file'/>
+                    <img id='preview' src='' alt='Preview Foto'/>
+                    <button type='submit'>KIRIM ABSENSI SEKARANG</button>
+                </form>
+            </div>
+
+            <div class='list-container'>
+                <h3 style='font-size: 15px; border-bottom: 2px solid #eee; padding-bottom: 8px;'>Daftar Karyawan dan lokasi terkini</h3>
+                <div id='daftarAbsen'>Memuat data...</div>
+            </div>
         </div>
 
         <div class='footer-credit'>
@@ -246,7 +275,6 @@
         </div>
     </div>
 
-    <!-- Hanya panggil yang dibutuhkan saja -->
     <script src='https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js'></script>
     <script src='https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js'></script>
 
@@ -263,11 +291,63 @@
         if (!firebase.apps.length) firebase.initializeApp(config);
         var db = firebase.database();
         var currentWatchId = null;
+        var userLogin = null;
 
-        // Fungsi sembunyikan loading
-        function selesaiProses() {
-            document.getElementById('loadingOverlay').style.display = "none";
+        // Fungsi sembunyikan/tampilkan loading
+        function selesaiProses() { document.getElementById('loadingOverlay').style.display = "none"; }
+        function mulaiProses() { document.getElementById('loadingOverlay').style.display = "flex"; }
+
+        // Cek sesi login sebelumnya
+        function cekSesi() {
+            var sesi = localStorage.getItem('sesi_karyawan');
+            if (sesi) {
+                userLogin = JSON.parse(sesi);
+                tampilkanHalamanUtama();
+            }
         }
+        cekSesi();
+
+        // Login Karyawan
+        window.loginKaryawan = function() {
+            var hp = document.getElementById('loginHp').value.trim();
+            var sandi = document.getElementById('loginPass').value.trim();
+            if (!hp || !sandi) return alert("Isi semua kolom!");
+
+            mulaiProses();
+            db.ref('data_karyawan').orderByChild('hp').equalTo(hp).once('value', function(s) {
+                selesaiProses();
+                var data = s.val();
+                if (!data) return alert("Nomor HP tidak terdaftar!");
+                
+                var kunci = Object.keys(data)[0];
+                var karyawan = data[kunci];
+                
+                if (karyawan.sandi === sandi) {
+                    userLogin = { id: kunci, nama: karyawan.nama, hp: karyawan.hp };
+                    localStorage.setItem('sesi_karyawan', JSON.stringify(userLogin));
+                    tampilkanHalamanUtama();
+                } else {
+                    alert("Kata sandi salah!");
+                }
+            });
+        };
+
+        // Tampilkan halaman utama setelah login
+        function tampilkanHalamanUtama() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('mainSection').style.display = 'block';
+            document.getElementById('namaPengguna').innerText = userLogin.nama;
+            document.getElementById('nama').value = userLogin.nama;
+        }
+
+        // Logout
+        window.logout = function() {
+            localStorage.removeItem('sesi_karyawan');
+            userLogin = null;
+            if (currentWatchId) navigator.geolocation.clearWatch(currentWatchId);
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('mainSection').style.display = 'none';
+        };
 
         function cekResetHarian() {
             var tglSekarang = new Date().toLocaleDateString('id-ID');
@@ -329,13 +409,9 @@
 
         document.getElementById('formAbsen').onsubmit = function(e) {
             e.preventDefault();
-            if (!resFoto) { 
-                alert("Foto dulu Pak!"); 
-                return; 
-            }
-            document.getElementById('loadingOverlay').style.display = "flex";
+            if (!resFoto) { alert("Foto dulu Pak!"); return; }
+            mulaiProses();
             
-            // Batas waktu maksimal 15 detik, kalau belum selesai otomatis hilang
             var waktuHabis = setTimeout(selesaiProses, 15000);
             
             navigator.geolocation.getCurrentPosition(function(p) {
@@ -349,7 +425,8 @@
                     lon: p.coords.longitude,
                     waktu: new Date().toLocaleTimeString('id-ID'),
                     lastUpdate: new Date().toLocaleTimeString('id-ID'),
-                    gps_active: true
+                    gps_active: true,
+                    id_karyawan: userLogin.id
                 }).then(function() {
                     clearTimeout(waktuHabis);
                     selesaiProses();
@@ -358,16 +435,16 @@
                     document.getElementById('formAbsen').reset();
                     document.getElementById('preview').style.display = 'none';
                     resFoto = "";
-                    alert("Berhasil!");
-                }).catch(function(err) {
+                    alert("Berhasil absen!");
+                }).catch(function() {
                     clearTimeout(waktuHabis);
                     selesaiProses();
-                    alert("Gagal simpan: Cek koneksi internet");
+                    alert("Gagal simpan! Cek koneksi.");
                 });
             }, function() { 
                 clearTimeout(waktuHabis);
                 selesaiProses();
-                alert("GPS Gagal! Pastikan GPS Aktif."); 
+                alert("GPS tidak aktif!"); 
             }, { enableHighAccuracy: true, timeout: 10000 });
         };
 
@@ -420,4 +497,3 @@
     </script>
 </body>
 </html>
-  
