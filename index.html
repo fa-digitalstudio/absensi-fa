@@ -218,6 +218,7 @@
             100% { transform: rotate(360deg); } 
         }
         
+        /* Style Tambahan untuk tombol PDF */
         .btn-pdf { background: #27ae60 !important; margin-top: 10px !important; }
 
         .footer-credit { 
@@ -271,7 +272,7 @@
         </div>
 
         <div class='list-container'>
-            <h3 style='font-size: 15px; border-bottom: 2px solid #eee; padding-bottom: 8px;'>Daftar Driver Aktif dan lokasi terkini</h3>
+            <h3 style='font-size: 15px; border-bottom: 2px solid #eee; padding-bottom: 8px;'>Daftar Karyawan dan lokasi terkini</h3>
             <div id='daftarAbsen'>Memuat data...</div>
             
             <button class='btn-pdf' id='btnDownloadPDF' onclick='generatePDF()' style='display:none;'>DOWNLOAD DATA (PDF)</button>
@@ -292,21 +293,20 @@
 
     <script type='text/javascript'>
     (function() {
-        // Konfigurasi sudah disatukan kembali
-        const firebaseConfig = {
+        var config = {
             apiKey: "AIzaSyCMUw8KwCeSNY41i5EmmqKexzLp5RRMNoY",
             authDomain: "daftar-absen-cc868.firebaseapp.com",
             databaseURL: "https://daftar-absen-cc868-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "daftar-absen-cc868",
             appId: "1:486404759637:web:120404fde3e0c1f1d0b4dc"
         };
-        const KEY_ADM = "farid1234";
 
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) firebase.initializeApp(config);
         var db = firebase.database();
+        var KEY_ADM = "farid1234";
         var idHapus = "";
         var currentWatchId = null;
-        var dataGlobal = {};
+        var dataGlobal = {}; // Untuk simpan data buat PDF
 
         function cekResetHarian() {
             var tglSekarang = new Date().toLocaleDateString('id-ID');
@@ -331,11 +331,9 @@
                 img.src = reader.result;
                 img.onload = function() {
                     var canvas = document.createElement('canvas');
-                    canvas.width = 320;
-                    canvas.height = (img.height/img.width)*320;
-                    var ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    resFoto = canvas.toDataURL('image/jpeg', 0.4);
+                    canvas.width = 400; canvas.height = (img.height/img.width)*400;
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    resFoto = canvas.toDataURL('image/jpeg', 0.6);
                     document.getElementById('preview').src = resFoto;
                     document.getElementById('preview').style.display = 'block';
                 }
@@ -355,7 +353,7 @@
                     });
                 }, function(err) {
                     db.ref('absensi_driver/' + k).update({ gps_active: false });
-                }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 });
+                }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
             }
         }
 
@@ -395,15 +393,14 @@
             }, function() { 
                 document.getElementById('loadingOverlay').style.display = "none"; 
                 alert("GPS Gagal! Pastikan GPS Aktif."); 
-            }, { enableHighAccuracy: true, timeout: 15000 });
+            }, { enableHighAccuracy: true });
         };
 
         var cachePos = {};
-        // Ambil hanya 20 data terakhir agar tetap ringan
-        db.ref('absensi_driver').orderByKey().limitToLast(20).on('value', function(s) {
+        db.ref('absensi_driver').on('value', function(s) {
             var c = document.getElementById('daftarAbsen');
             var data = s.val();
-            dataGlobal = data;
+            dataGlobal = data; // Update data global
             
             if (!data) {
                 c.innerHTML = "Belum ada data.";
@@ -432,7 +429,7 @@
 
                 if (!el) {
                     var html = '<div class="absen-item" id="item-' + k + '">' +
-                        '<img src="' + i.foto + '" alt="Foto Driver" loading="lazy"/>' +
+                        '<img src="' + i.foto + '" alt="Foto Driver"/>' +
                         '<div class="absen-info">' +
                             '<span class="tracking-status">● Live</span>' +
                             '<b>' + i.nama + ' (' + i.status + ')</b>' +
@@ -441,8 +438,8 @@
                             '<div id="warn-' + k + '">' + gpsWarningHtml + '</div>' +
                             '<a class="btn-lokasi" id="l-' + k + '" href="' + gmapsUrl + '" target="_blank">Buka Maps</a>' +
                             '<div style="margin-top:8px;"><button onclick="bukaModal(\''+k+'\')" style="width:auto; background:red; padding:4px 10px; font-size:10px; border-radius:4px;">Hapus</button></div>' +
-                        </div>' +
-                        '<div class="mini-map-box"><iframe id="f-' + k + '" src="' + mapUrl + '" title="Peta Lokasi" loading="lazy"></iframe></div>' +
+                        '</div>' +
+                        '<div class="mini-map-box"><iframe id="f-' + k + '" src="' + mapUrl + '" title="Peta Lokasi"></iframe></div>' +
                     '</div>';
                     if (c.innerHTML === "Memuat data..." || c.innerHTML === "Belum ada data.") c.innerHTML = "";
                     c.insertAdjacentHTML('afterbegin', html);
@@ -466,6 +463,7 @@
             });
         });
 
+        // FUNGSI GENERATE PDF
         window.generatePDF = function() {
             if (!dataGlobal) return;
             const { jsPDF } = window.jspdf;
@@ -497,7 +495,7 @@
                 headStyles: { fillColor: [230, 126, 34] }
             });
 
-            doc.save("Laporan_Absensi_fa-digitalstudio_" + new Date().toLocaleDateString('id-ID') + ".pdf");
+            doc.save("Laporan_Absensi_fa_digitalstudio_" + new Date().toLocaleDateString('id-ID') + ".pdf");
         };
 
         window.bukaModal = function(id) { idHapus = id; document.getElementById('modalPass').style.display = 'flex'; document.getElementById('inputPass').focus(); };
@@ -514,10 +512,6 @@
                 tutupModal();
             } else { alert("Kode Akses Salah!"); }
         };
-
-        window.addEventListener('beforeunload', function() {
-            if (currentWatchId) navigator.geolocation.clearWatch(currentWatchId);
-        });
     })();
     </script>
 </body>
