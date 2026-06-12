@@ -5,126 +5,217 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Absensi Karyawan - FA DIGITAL STUDIO</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; }
         :root {
-            --utama: #2c3e50;
-            --hijau: #27ae60;
-            --kuning: #f39c12;
-            --merah: #e74c3c;
-            --abu: #f8f9fa;
-            --teks: #333;
-            --batas: #e9ecef;
+            --primary: #1565C0;
+            --primary-dark: #0D47A1;
+            --success: #2E7D32;
+            --warning: #F57C00;
+            --danger: #D32F2F;
+            --light: #F8FAFC;
+            --white: #FFFFFF;
+            --gray-100: #F1F5F9;
+            --gray-200: #E2E8F0;
+            --gray-500: #64748B;
+            --gray-700: #334155;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --radius: 12px;
         }
-        body { background: var(--abu); color: var(--teks); padding-bottom: 20px; }
+
+        body {
+            background-color: var(--light);
+            color: var(--gray-700);
+            line-height: 1.5;
+        }
 
         /* Header */
-        .header {
-            background: var(--utama);
-            color: white;
-            padding: 20px 15px;
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 24px 20px 32px;
+            border-radius: 0 0 24px 24px;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .app-header h1 {
+            font-size: 22px;
+            font-weight: 600;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .header h1 { font-size: 20px; margin-bottom: 4px; }
-        .header p { font-size: 13px; opacity: 0.9; }
-
-        .container { padding: 16px; max-width: 480px; margin: 0 auto; }
-
-        /* Kartu */
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 18px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-        }
-        .card h3 {
-            text-align: center;
-            color: var(--utama);
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        .card h4 {
-            color: var(--utama);
-            margin: 20px 0 12px 0;
-            font-size: 16px;
-            border-bottom: 1px solid var(--batas);
-            padding-bottom: 6px;
+            margin-bottom: 4px;
         }
 
-        /* Info Waktu & Lokasi */
-        .info-panel {
-            background: #ecf0f1;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 20px;
+        .app-header p {
             font-size: 14px;
-            line-height: 1.6;
+            opacity: 0.9;
+            text-align: center;
         }
 
-        /* Input & Tombol */
+        /* Container */
+        .container {
+            max-width: 480px;
+            margin: -20px auto 24px;
+            padding: 0 16px;
+        }
+
+        /* Card */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--gray-200);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        /* Info Panel */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: var(--gray-100);
+            padding: 12px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .info-icon {
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        /* Input */
         input {
             width: 100%;
-            padding: 12px 14px;
+            padding: 14px 16px;
             margin: 8px 0;
-            border: 1px solid #ddd;
+            border: 1px solid var(--gray-200);
             border-radius: 8px;
             font-size: 15px;
+            background: var(--white);
+            transition: all 0.2s;
         }
-        button {
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15);
+        }
+
+        /* Buttons */
+        .btn {
             width: 100%;
-            padding: 13px;
+            padding: 14px;
             border: none;
             border-radius: 8px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: 0.2s;
-            margin: 6px 0;
+            transition: all 0.2s ease;
+            margin: 8px 0;
         }
-        .btn-login { background: var(--utama); color: white; }
-        .btn-foto { background: #3498db; color: white; }
-        .btn-masuk { background: var(--hijau); color: white; }
-        .btn-pulang { background: var(--kuning); color: white; }
-        .btn-keluar { background: var(--merah); color: white; margin-top: 20px; }
-        .btn:disabled { background: #bdc3c7; cursor: not-allowed; }
 
-        /* Kamera & Foto */
-        .area-kamera {
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-camera { background: #7B1FA2; color: var(--white); }
+        .btn-success { background: var(--success); color: var(--white); }
+        .btn-success:disabled { background: #A5D6A7; cursor: not-allowed; }
+        .btn-warning { background: var(--warning); color: var(--white); }
+        .btn-warning:disabled { background: #FFCC80; cursor: not-allowed; }
+        .btn-danger { background: var(--danger); color: var(--white); margin-top: 24px; }
+
+        /* Camera & Photo */
+        .camera-container {
             width: 100%;
             max-width: 280px;
-            margin: 15px auto;
-            border-radius: 8px;
-            display: none;
-            border: 1px solid #ddd;
+            margin: 16px auto;
+            border-radius: var(--radius);
             overflow: hidden;
+            border: 2px solid var(--gray-200);
+            display: none;
         }
-        #areaKamera { width: 100%; height: auto; display: block; }
+
+        #areaKamera {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
         #hasilFoto {
             width: 160px;
             height: 160px;
-            margin: 15px auto;
-            border-radius: 8px;
+            margin: 16px auto;
+            border-radius: 50%;
             object-fit: cover;
+            border: 4px solid var(--gray-200);
+            box-shadow: var(--shadow-sm);
             display: none;
-            border: 3px solid #eee;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         /* Riwayat Absen */
+        .riwayat-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin: 20px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
         .riwayat-item {
-            padding: 12px;
+            padding: 14px;
             border-radius: 8px;
             margin-bottom: 10px;
-            border-left: 4px solid var(--utama);
-            background: #fdfdfd;
+            border-left: 4px solid var(--gray-500);
+            background: var(--gray-100);
         }
-        .riwayat-item.masuk { border-left-color: var(--hijau); }
-        .riwayat-item.pulang { border-left-color: var(--kuning); }
-        .riwayat-tanggal { font-weight: bold; font-size: 14px; color: var(--utama); }
-        .riwayat-waktu { font-size: 13px; color: #666; margin-top: 4px; }
-        .riwayat-status { font-size: 13px; font-weight: 500; margin-top: 4px; }
-        .kosong { text-align: center; color: #888; padding: 20px; font-style: italic; }
+
+        .riwayat-item.masuk { border-left-color: var(--success); }
+        .riwayat-item.pulang { border-left-color: var(--warning); }
+
+        .riwayat-tanggal {
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        .riwayat-waktu {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        .riwayat-status {
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .kosong {
+            text-align: center;
+            color: var(--gray-500);
+            padding: 30px;
+            font-style: italic;
+        }
 
         /* Halaman */
         #halamanUtama { display: none; }
@@ -133,7 +224,7 @@
 </head>
 <body>
 
-<div class="header">
+<div class="app-header">
     <h1>FA DIGITAL STUDIO</h1>
     <p>Sistem Absensi Karyawan</p>
 </div>
@@ -141,40 +232,50 @@
 <div class="container">
     <!-- Halaman Login -->
     <div class="card" id="halamanLogin">
-        <h3>Masuk ke Sistem</h3>
+        <h2 class="card-title">Masuk ke Sistem</h2>
         <input type="text" id="inputHp" placeholder="Nomor HP" required>
         <input type="password" id="inputSandi" placeholder="Kata Sandi" required>
-        <button class="btn-login" onclick="prosesLogin()">Masuk</button>
+        <button class="btn btn-primary" onclick="prosesLogin()">Masuk</button>
     </div>
 
-    <!-- Halaman Setelah Login -->
+    <!-- Halaman Utama -->
     <div class="card" id="halamanUtama">
-        <h3>Halo, <span id="namaPengguna"></span> 👋</h3>
+        <h2 class="card-title">Selamat Datang</h2>
+        <p style="text-align:center; font-size:16px; margin-bottom:20px; font-weight:500;">Halo, <span id="namaPengguna"></span> 👋</p>
 
-        <div class="info-panel">
-            📅 Tanggal: <span id="tglSekarang"></span><br>
-            ⏰ Jam: <span id="jamSekarang"></span><br>
-            📍 Lokasi: <span id="teksLokasi">Memuat...</span>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-icon">📅</span>
+                <span>Tanggal: <strong id="tglSekarang"></strong></span>
+            </div>
+            <div class="info-item">
+                <span class="info-icon">⏰</span>
+                <span>Jam: <strong id="jamSekarang"></strong></span>
+            </div>
+            <div class="info-item">
+                <span class="info-icon">📍</span>
+                <span>Lokasi: <strong id="teksLokasi">Memuat...</strong></span>
+            </div>
         </div>
 
         <!-- Bagian Foto -->
-        <button class="btn-foto" onclick="bukaAmbilFoto()">📸 Ambil Foto Absen</button>
-        <div class="area-kamera">
+        <button class="btn btn-camera" onclick="bukaAmbilFoto()">📸 Ambil Foto Absen</button>
+        <div class="camera-container">
             <video id="areaKamera" autoplay playsinline></video>
         </div>
-        <img id="hasilFoto" alt="Hasil Foto Absen">
+        <img id="hasilFoto" alt="Foto Absen">
 
         <!-- Tombol Absen -->
-        <button class="btn-masuk" id="btnAbsenMasuk" onclick="lakukanAbsen('masuk')" disabled>✅ Absen Masuk</button>
-        <button class="btn-pulang" id="btnAbsenPulang" onclick="lakukanAbsen('pulang')" disabled>🏁 Absen Pulang</button>
+        <button class="btn btn-success" id="btnAbsenMasuk" onclick="lakukanAbsen('masuk')" disabled>✅ Absen Masuk</button>
+        <button class="btn btn-warning" id="btnAbsenPulang" onclick="lakukanAbsen('pulang')" disabled>🏁 Absen Pulang</button>
 
-        <!-- Riwayat Absen Pribadi -->
-        <h4>📋 Riwayat Absen Saya</h4>
-        <div id="daftarRiwayatAbsen" class="riwayat-konten">
+        <!-- Riwayat Absen -->
+        <h3 class="riwayat-title">📋 Riwayat Absen Saya</h3>
+        <div id="daftarRiwayatAbsen">
             <div class="kosong">Belum ada riwayat absen</div>
         </div>
 
-        <button class="btn-keluar" onclick="prosesLogout()">🚪 Keluar Akun</button>
+        <button class="btn btn-danger" onclick="prosesLogout()">🚪 Keluar Akun</button>
     </div>
 </div>
 
@@ -300,18 +401,18 @@ function ambilLokasi() {
     );
 }
 
-// --- Kamera & Foto (Hanya Saat Diklik) ---
+// --- Kamera & Foto ---
 function bukaAmbilFoto() {
     tutupKamera();
     fotoAbsen = null;
     document.getElementById("hasilFoto").style.display = "none";
-    document.querySelector(".area-kamera").style.display = "block";
+    document.querySelector(".camera-container").style.display = "block";
 
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
     .then(stream => {
         streamKamera = stream;
         document.getElementById("areaKamera").srcObject = stream;
-        setTimeout(ambilFotoOtomatis, 2000); // Ambil otomatis setelah kamera terbuka
+        setTimeout(ambilFotoOtomatis, 2000);
     })
     .catch(() => alert("❌ Tidak bisa mengakses kamera! Izinkan akses kamera di pengaturan."));
 }
@@ -335,7 +436,7 @@ function tutupKamera() {
         streamKamera.getTracks().forEach(track => track.stop());
         streamKamera = null;
     }
-    document.querySelector(".area-kamera").style.display = "none";
+    document.querySelector(".camera-container").style.display = "none";
 }
 
 // --- Kontrol Tombol Absen ---
@@ -390,7 +491,7 @@ function lakukanAbsen(tipe) {
     .catch(err => alert("❌ Gagal menyimpan: " + err.message));
 }
 
-// --- Muat Riwayat Absen Pribadi ---
+// --- Muat Riwayat Absen ---
 function muatRiwayatAbsenPribadi() {
     db.ref("riwayat_absen")
         .orderByChild("hp")
@@ -408,9 +509,9 @@ function muatRiwayatAbsenPribadi() {
                     const kelas = d.status.includes("Masuk") ? "masuk" : "pulang";
                     html += `
                     <div class="riwayat-item ${kelas}">
-                        <div class="riwayat-tanggal">📅 ${d.tanggal || "-"}</div>
-                        <div class="riwayat-waktu">⏰ ${d.waktu || "-"}</div>
-                        <div class="riwayat-status">📌 ${d.status || "-"}</div>
+                        <div class="riwayat-tanggal">${d.tanggal || "-"}</div>
+                        <div class="riwayat-waktu">${d.waktu || "-"}</div>
+                        <div class="riwayat-status">${d.status || "-"}</div>
                     </div>`;
                 });
             }
