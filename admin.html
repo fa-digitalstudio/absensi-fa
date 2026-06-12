@@ -210,11 +210,15 @@
             border-radius: 6px;
             object-fit: cover;
             border: 1px solid var(--batas);
+            cursor: pointer;
         }
         .link-peta {
             font-size: 12px;
             color: var(--utama);
             text-decoration: none;
+        }
+        .link-peta:hover {
+            text-decoration: underline;
         }
 
         /* Tombol */
@@ -380,7 +384,7 @@ const config = {
     authDomain: "daftar-absen-cc868.firebaseapp.com",
     databaseURL: "https://daftar-absen-cc868-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "daftar-absen-cc868",
-    storageBucket: "daftar-absen-cc868.appspot.com", // <-- Tambahkan ini
+    storageBucket: "daftar-absen-cc868.appspot.com",
     appId: "1:486404759637:web:120404fde3e0c1f1d0b4dc"
 };
 
@@ -519,9 +523,9 @@ function editKaryawan(kunci, data) {
 }
 
 function hapusKaryawan(kunci) {
-    if(!confirm("Yakin hapus data ini?")) return;
+    if(!confirm("Yakin ingin menghapus data ini?")) return;
     db.ref(`data_karyawan/${kunci}`).remove().then(() => {
-        alert("✅ Data dihapus!");
+        alert("✅ Data berhasil dihapus!");
         muatDataKaryawan();
     });
 }
@@ -576,25 +580,34 @@ function unduhDataKaryawan() {
     });
 }
 
-// --- Fungsi Riwayat Absen ---
+// --- Fungsi Riwayat Absen (SUDAH DIPERBARUI) ---
 function muatRiwayatAbsen() {
     db.ref("riwayat_absen").orderByKey().limitToLast(100).once("value", snap => {
         const data = snap.val() || {};
         let html = "", no = 1;
         if (Object.keys(data).length === 0) {
-            html = "<tr><td colspan='9' class='kosong'>Belum ada riwayat</td></tr>";
+            html = "<tr><td colspan='9' class='kosong'>Belum ada riwayat absen</td></tr>";
         } else {
             Object.entries(data).reverse().forEach(([kunci, d]) => {
                 const status = d.status === "Masuk" ? "status-masuk" : "status-pulang";
-                const lokasi = d.lat && d.lon ? `${d.lat}, ${d.lon}` : "-";
-                const foto = d.foto ? `<a href="${d.foto}" target="_blank">Lihat</a>` : "-";
+                
+                // Tampilkan lokasi dengan tautan ke Google Maps
+                const lokasi = (d.lat && d.lon) 
+                    ? `<a href="https://www.google.com/maps?q=${d.lat},${d.lon}" target="_blank" class="link-peta">Lihat di Google Maps</a>` 
+                    : "-";
+                
+                // Tampilkan foto absen langsung di tabel
+                const foto = d.foto 
+                    ? `<img src="${d.foto}" class="foto-absen" alt="Foto Absen" onclick="window.open('${d.foto}','_blank')" title="Klik untuk memperbesar">` 
+                    : "-";
+
                 html += `
                 <tr>
                     <td>${no++}</td>
-                    <td>${d.nama}</td>
-                    <td>${d.tanggal}</td>
-                    <td>${d.jam}</td>
-                    <td class="${status}">${d.status}</td>
+                    <td>${d.nama || "-"}</td>
+                    <td>${d.tanggal || "-"}</td>
+                    <td>${d.jam || "-"}</td>
+                    <td class="${status}">${d.status || "-"}</td>
                     <td>${d.keterangan || "-"}</td>
                     <td>${lokasi}</td>
                     <td>${foto}</td>
@@ -607,7 +620,7 @@ function muatRiwayatAbsen() {
 }
 
 function hapusAbsen(kunci) {
-    if(!confirm("Yakin hapus?")) return;
+    if(!confirm("Yakin ingin menghapus data ini?")) return;
     db.ref(`riwayat_absen/${kunci}`).remove().then(() => muatRiwayatAbsen());
 }
 
@@ -635,7 +648,7 @@ function muatRiwayatLogin() {
         const data = snap.val() || {};
         let html = "", no = 1;
         if (Object.keys(data).length === 0) {
-            html = "<tr><td colspan='5' class='kosong'>Belum ada aktivitas</td></tr>";
+            html = "<tr><td colspan='5' class='kosong'>Belum ada riwayat aktivitas</td></tr>";
         } else {
             Object.entries(data).reverse().forEach(([kunci, d]) => {
                 const jenis = d.jenis === "login" ? "Masuk" : "Keluar";
@@ -654,7 +667,7 @@ function muatRiwayatLogin() {
 }
 
 function hapusLogin(kunci) {
-    if(!confirm("Yakin hapus riwayat ini?")) return;
+    if(!confirm("Yakin ingin menghapus riwayat ini?")) return;
     db.ref(`riwayat_aktivitas/${kunci}`).remove().then(() => muatRiwayatLogin());
 }
 
