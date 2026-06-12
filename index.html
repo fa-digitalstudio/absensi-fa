@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Absensi Karyawan - FA DIGITAL STUDIO</title>
+    <title>Daftar Absensi - FA DIGITAL STUDIO</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         :root {
-            --utama: #2c3e50;       /* Warna utama tema */
+            --utama: #2c3e50;
             --hijau: #27ae60;
             --kuning: #f39c12;
             --merah: #e74c3c;
@@ -33,14 +33,15 @@
             border-radius: 0 0 20px 20px;
             text-align: center;
             box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
         .header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
         .header p { font-size: 14px; opacity: 0.9; }
 
         /* Container */
         .container {
-            max-width: 520px;
-            margin: 24px auto;
+            max-width: 1000px;
+            margin: 0 auto;
             padding: 0 16px;
         }
 
@@ -48,7 +49,7 @@
         .card {
             background: var(--putih);
             border-radius: 14px;
-            padding: 24px;
+            padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             border: 1px solid var(--batas);
@@ -57,118 +58,28 @@
         .card h3 {
             text-align: center;
             color: var(--utama);
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 24px;
-        }
-
-        /* Input, Select, Textarea */
-        input, select, textarea {
-            width: 100%;
-            padding: 16px;
-            margin: 8px 0 16px;
-            border: 1px solid var(--batas);
-            border-radius: 12px;
-            font-size: 16px;
-            background: var(--putih);
-            color: var(--teks);
-        }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--utama);
-            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.12);
-        }
-        input::placeholder, textarea::placeholder {
-            color: var(--teks-reduksi);
-        }
-
-        /* Kamera & Foto */
-        .camera-area {
-            width: 100%;
-            max-width: 280px;
-            margin: 16px auto;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--batas);
-            display: none;
-            position: relative;
-        }
-        #videoKamera { width: 100%; display: block; }
-        .btn-potret {
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--utama);
-            color: var(--putih);
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
             font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-        #hasilFoto {
-            width: 160px;
-            height: 160px;
-            margin: 16px auto;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--batas);
-            display: none;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-weight: 700;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--batas);
         }
 
         /* Tombol */
-        .btn-foto {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            background: var(--abu-terang);
-            border: 1px solid var(--batas);
-            cursor: pointer;
-            margin: 8px 0 16px;
-            text-align: left;
-            color: var(--teks);
-        }
-        .btn-kirim {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
+        .btn-muat {
             background: var(--utama);
             color: var(--putih);
-            transition: 0.2s;
-        }
-        .btn-kirim:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-        }
-        .btn-keluar {
-            width: 100%;
-            padding: 14px;
             border: none;
+            padding: 8px 16px;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
-            background: var(--merah);
-            color: var(--putih);
-            margin-top: 20px;
+            margin-bottom: 12px;
         }
 
-        /* Tabel Riwayat */
+        /* Tabel */
         .table-container {
             overflow-x: auto;
-            margin-top: 12px;
             border-radius: 8px;
             border: 1px solid var(--batas);
         }
@@ -188,11 +99,9 @@
         table td {
             padding: 12px 8px;
             border-bottom: 1px solid var(--batas);
-            color: var(--teks);
+            vertical-align: middle;
         }
-        table tr:nth-child(even) { background: var(--putih); }
-        .status-masuk { color: var(--hijau); font-weight: 500; }
-        .status-pulang { color: var(--kuning); font-weight: 500; }
+        table tr:nth-child(even) { background: var(--abu-terang); }
         .kosong {
             text-align: center;
             padding: 30px;
@@ -200,70 +109,68 @@
             font-style: italic;
         }
 
-        /* Halaman */
-        #halamanUtama { display: none; }
-        #halamanLogin { display: block; }
+        /* Status & Foto */
+        .status-masuk { color: var(--hijau); font-weight: 500; }
+        .status-pulang { color: var(--kuning); font-weight: 500; }
+        .foto-absen {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid var(--batas);
+        }
+        .link-peta {
+            font-size: 12px;
+            color: var(--utama);
+            text-decoration: none;
+        }
+
+        /* Link ke Admin */
+        .link-admin {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: var(--utama);
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .link-admin:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 
 <div class="header">
     <h1>FA DIGITAL STUDIO</h1>
-    <p>Sistem Absensi Karyawan</p>
+    <p>Daftar Absensi Karyawan</p>
 </div>
 
 <div class="container">
-    <!-- Halaman Login -->
-    <div class="card" id="halamanLogin">
-        <h3>Masuk ke Sistem</h3>
-        <input type="text" id="inputHp" placeholder="Nomor HP" required>
-        <input type="password" id="inputSandi" placeholder="Kata Sandi" required>
-        <button class="btn-kirim" onclick="prosesLogin()">Masuk</button>
-    </div>
+    <div class="card">
+        <h3>📋 Data Absensi Terkini</h3>
+        <button class="btn-muat" onclick="muatDaftarAbsen()">🔄 Muat Ulang Data</button>
 
-    <!-- Halaman Utama -->
-    <div class="card" id="halamanUtama">
-        <h3>ABSENSI & LIVE TRACKING</h3>
-
-        <input type="text" id="namaPengguna" placeholder="Nama Lengkap" readonly>
-
-        <select id="jenisAbsen">
-            <option value="Masuk">Masuk</option>
-            <option value="Pulang">Pulang</option>
-        </select>
-
-        <textarea id="keterangan" rows="2" placeholder="Keterangan (Opsional)..."></textarea>
-
-        <button class="btn-foto" onclick="bukaKamera()">📸 Ambil Foto Bukti</button>
-        <div class="camera-area">
-            <video id="videoKamera" autoplay playsinline></video>
-            <button class="btn-potret" onclick="ambilFotoManual()">📸</button>
-        </div>
-        <img id="hasilFoto" alt="Foto Bukti">
-
-        <button class="btn-kirim" id="btnKirimAbsen" onclick="lakukanAbsen()" disabled>KIRIM ABSENSI SEKARANG</button>
-
-        <!-- Riwayat Absen -->
-        <h4 style="font-size:17px; margin:24px 0 12px; color:var(--utama); border-bottom:1px solid var(--batas); padding-bottom:6px;">📋 Riwayat Absen Saya</h4>
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
+                        <th>No</th>
+                        <th>Nama Lengkap</th>
                         <th>Tanggal</th>
-                        <th>Waktu</th>
+                        <th>Jam</th>
                         <th>Status</th>
-                        <th>Keterangan</th>
                         <th>Lokasi</th>
-                        <th>GPS</th>
+                        <th>Foto</th>
                     </tr>
                 </thead>
-                <tbody id="isiTabelRiwayat">
-                    <tr><td colspan="6" class="kosong">Belum ada riwayat absen</td></tr>
+                <tbody id="tabelAbsen">
+                    <tr><td colspan="7" class="kosong">Belum ada data absen karyawan</td></tr>
                 </tbody>
             </table>
         </div>
 
-        <button class="btn-keluar" onclick="prosesLogout()">🚪 Keluar Akun</button>
+        <a href="admin.html" class="link-admin">🔐 Masuk ke Halaman Admin</a>
     </div>
 </div>
 
@@ -277,231 +184,68 @@ const config = {
     authDomain: "daftar-absen-cc868.firebaseapp.com",
     databaseURL: "https://daftar-absen-cc868-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "daftar-absen-cc868",
+    storageBucket: "daftar-absen-cc868.appspot.com",
     appId: "1:486404759637:web:120404fde3e0c1f1d0b4dc"
 };
 
 if (!firebase.apps.length) firebase.initializeApp(config);
 const db = firebase.database();
 
-let dataKaryawan = {};
-let posisi = { lat: null, lon: null, gpsAktif: false };
-let streamKamera = null;
-let fotoAbsen = null;
-
-// --- Simpan & Cek Login ---
-function simpanLogin(data) {
-    localStorage.setItem("dataKaryawan", JSON.stringify(data));
-}
-
-function cekLoginTersimpan() {
-    const tersimpan = localStorage.getItem("dataKaryawan");
-    if (tersimpan) {
-        dataKaryawan = JSON.parse(tersimpan);
-        tampilkanHalamanUtama();
-        ambilLokasi();
-        muatRiwayatAbsenTabel();
-    }
-}
-
-cekLoginTersimpan();
-
-// --- Proses Login ---
-function prosesLogin() {
-    const hp = document.getElementById("inputHp").value.trim();
-    const sandi = document.getElementById("inputSandi").value.trim();
-
-    if (!hp || !sandi) return alert("Masukkan nomor HP dan sandi!");
-
-    db.ref("data_karyawan").orderByChild("hp").equalTo(hp).once("value", snap => {
-        if (!snap.exists()) return alert("Nomor HP tidak terdaftar!");
+// Fungsi memuat data absen - DIPERBAIKI
+function muatDaftarAbsen() {
+    // Ambil data dari jalur "riwayat_absen" dan urutkan dari terbaru
+    db.ref("riwayat_absen")
+      .orderByKey()
+      .limitToLast(100)
+      .once("value")
+      .then(snap => {
         const data = snap.val();
-        const kunci = Object.keys(data)[0];
-        const d = data[kunci];
-        if (d.sandi === sandi) {
-            dataKaryawan = d;
-            simpanLogin(d);
-            catatAktivitas(d.nama, "login");
-            tampilkanHalamanUtama();
-            ambilLokasi();
-            muatRiwayatAbsenTabel();
+        let html = "";
+        let nomor = 1;
+
+        // Cek apakah ada data
+        if (!data || Object.keys(data).length === 0) {
+            html = "<tr><td colspan='7' class='kosong'>Belum ada karyawan yang melakukan absen</td></tr>";
         } else {
-            alert("Kata sandi salah!");
+            // Balik urutan agar yang terbaru ada di atas
+            const daftar = Object.entries(data).reverse();
+            
+            daftar.forEach(([kunci, d]) => {
+                const kelasStatus = d.status === "Masuk" ? "status-masuk" : "status-pulang";
+                
+                const lokasi = (d.lat && d.lon) 
+                    ? `<a href="https://www.google.com/maps?q=${d.lat},${d.lon}" target="_blank" class="link-peta">Lihat Peta</a>` 
+                    : "-";
+                
+                const foto = d.foto 
+                    ? `<img src="${d.foto}" class="foto-absen" alt="Foto Absen">` 
+                    : "-";
+
+                html += `
+                <tr>
+                    <td>${nomor++}</td>
+                    <td>${d.nama || "-"}</td>
+                    <td>${d.tanggal || "-"}</td>
+                    <td>${d.jam || "-"}</td>
+                    <td class="${kelasStatus}">${d.status || "-"}</td>
+                    <td>${lokasi}</td>
+                    <td>${foto}</td>
+                </tr>`;
+            });
         }
+
+        document.getElementById("tabelAbsen").innerHTML = html;
+    })
+    .catch(err => {
+        console.error("Gagal mengambil data:", err);
+        document.getElementById("tabelAbsen").innerHTML = "<tr><td colspan='7' class='kosong'>Terjadi kesalahan memuat data</td></tr>";
     });
 }
 
-function tampilkanHalamanUtama() {
-    document.getElementById("namaPengguna").value = dataKaryawan.nama;
-    document.getElementById("halamanLogin").style.display = "none";
-    document.getElementById("halamanUtama").style.display = "block";
-}
-
-// --- Proses Logout ---
-function prosesLogout() {
-    if (!confirm("Yakin ingin keluar?")) return;
-    catatAktivitas(dataKaryawan.nama, "logout");
-    localStorage.removeItem("dataKaryawan");
-    tutupKamera();
-    resetTampilan();
-}
-
-function resetTampilan() {
-    document.getElementById("halamanLogin").style.display = "block";
-    document.getElementById("halamanUtama").style.display = "none";
-    document.getElementById("inputHp").value = "";
-    document.getElementById("inputSandi").value = "";
-    document.getElementById("hasilFoto").style.display = "none";
-    document.getElementById("isiTabelRiwayat").innerHTML = "<tr><td colspan='6' class='kosong'>Belum ada riwayat absen</td></tr>";
-    fotoAbsen = null;
-    posisi = { lat: null, lon: null, gpsAktif: false };
-    tombolAbsenMati();
-}
-
-// --- Ambil Lokasi GPS ---
-function ambilLokasi() {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-        hasil => {
-            posisi.lat = hasil.coords.latitude.toFixed(6);
-            posisi.lon = hasil.coords.longitude.toFixed(6);
-            posisi.gpsAktif = true;
-        },
-        () => { posisi.gpsAktif = false; },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-}
-
-// --- Kamera & Ambil Foto Manual ---
-function bukaKamera() {
-    tutupKamera();
-    fotoAbsen = null;
-    document.getElementById("hasilFoto").style.display = "none";
-    document.querySelector(".camera-area").style.display = "block";
-
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-    .then(stream => {
-        streamKamera = stream;
-        document.getElementById("videoKamera").srcObject = stream;
-    })
-    .catch(() => alert("❌ Izinkan akses kamera terlebih dahulu di pengaturan!"));
-}
-
-function ambilFotoManual() {
-    const video = document.getElementById("videoKamera");
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-    fotoAbsen = canvas.toDataURL("image/jpeg", 0.8);
-
-    tutupKamera();
-    document.getElementById("hasilFoto").src = fotoAbsen;
-    document.getElementById("hasilFoto").style.display = "block";
-    tombolAbsenHidup();
-}
-
-function tutupKamera() {
-    if (streamKamera) {
-        streamKamera.getTracks().forEach(track => track.stop());
-        streamKamera = null;
-    }
-    document.querySelector(".camera-area").style.display = "none";
-}
-
-// --- Kontrol Tombol ---
-function tombolAbsenHidup() {
-    document.getElementById("btnKirimAbsen").disabled = false;
-}
-function tombolAbsenMati() {
-    document.getElementById("btnKirimAbsen").disabled = true;
-}
-
-// --- Proses Kirim Absen ---
-function lakukanAbsen() {
-    if (!posisi.lat || !posisi.lon) {
-        alert("Mengambil lokasi, tunggu sebentar...");
-        ambilLokasi();
-        setTimeout(lakukanAbsen, 2000);
-        return;
-    }
-    if (!fotoAbsen) return alert("Ambil foto bukti terlebih dahulu!");
-
-    const sekarang = new Date();
-    const tgl = sekarang.toISOString().split("T")[0];
-    const jam = sekarang.toLocaleTimeString("id-ID");
-    const jenis = document.getElementById("jenisAbsen").value;
-    const keterangan = document.getElementById("keterangan").value.trim() || "-";
-
-    const data = {
-        nama: dataKaryawan.nama,
-        hp: dataKaryawan.hp,
-        status: jenis,
-        keterangan: keterangan,
-        tanggal: tgl,
-        jam: jam,
-        foto: fotoAbsen,
-        lat: posisi.lat,
-        lon: posisi.lon,
-        gps_aktif: posisi.gpsAktif,
-        perangkat: dapatkanInfoPerangkat()
-    };
-
-    db.ref("riwayat_absen").push(data)
-    .then(() => {
-        alert("✅ Absen berhasil dikirim!");
-        document.getElementById("keterangan").value = "";
-        document.getElementById("hasilFoto").style.display = "none";
-        fotoAbsen = null;
-        tombolAbsenMati();
-        muatRiwayatAbsenTabel();
-    })
-    .catch(err => alert("❌ Gagal: " + err.message));
-}
-
-// --- Muat Riwayat ke Tabel ---
-function muatRiwayatAbsenTabel() {
-    db.ref("riwayat_absen")
-        .orderByChild("hp")
-        .equalTo(dataKaryawan.hp)
-        .limitToLast(20)
-        .on("value", snap => {
-            const data = snap.val() || {};
-            let html = "";
-            if (Object.keys(data).length === 0) {
-                html = "<tr><td colspan='6' class='kosong'>Belum ada riwayat absen</td></tr>";
-            } else {
-                Object.keys(data).reverse().forEach(k => {
-                    const d = data[k];
-                    const kelas = d.status === "Masuk" ? "status-masuk" : "status-pulang";
-                    const gps = d.gps_aktif ? "✅ Aktif" : "❌ Tidak";
-                    html += `
-                    <tr>
-                        <td>${d.tanggal || "-"}</td>
-                        <td>${d.jam || "-"}</td>
-                        <td class="${kelas}">${d.status || "-"}</td>
-                        <td>${d.keterangan || "-"}</td>
-                        <td>${d.lat}, ${d.lon}</td>
-                        <td>${gps}</td>
-                    </tr>`;
-                });
-            }
-            document.getElementById("isiTabelRiwayat").innerHTML = html;
-        });
-}
-
-// --- Fungsi Pendukung ---
-function dapatkanInfoPerangkat() {
-    const ua = navigator.userAgent;
-    if (ua.includes("Android")) return "HP Android";
-    if (ua.includes("iPhone") || ua.includes("iPad")) return "iPhone / iPad";
-    if (ua.includes("Windows")) return "Komputer Windows";
-    return "Perangkat Lain";
-}
-
-function catatAktivitas(nama, jenis) {
-    const waktu = new Date().toLocaleString("id-ID");
-    db.ref("riwayat_aktivitas").push({ nama, jenis, waktu });
-}
+// Jalankan saat halaman dibuka
+window.onload = () => {
+    muatDaftarAbsen();
+};
 </script>
 
 </body>
