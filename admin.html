@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Admin Dashboard - FA DIGITAL STUDIO</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            background-color: #f4f7f6; 
+            color: #333; 
+            margin: 0; 
+            padding: 0; 
+            padding-bottom: 100px; 
+        }
+        
+        .top-banner { 
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); 
+            color: white; 
+            padding: 30px 20px; 
+            text-align: center; 
+            border-bottom-left-radius: 25px; 
+            border-bottom-right-radius: 25px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .top-banner h1 { margin: 0; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+        .top-banner p { margin: 5px 0 0; font-size: 13px; opacity: 0.9; }
+
+        .container { padding: 0 15px; }
+        .card { 
+            background: #ffffff; 
+            padding: 20px; 
+            border-radius: 15px; 
+            margin-bottom: 20px; 
+            border: 1px solid #ddd; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+        }
+        h2 { 
+            text-align: center; 
+            color: #2c3e50; 
+            margin: 10px 0; 
+            font-size: 18px; 
+            font-weight: bold; 
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #2c3e50;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 5px 0;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        input, select, button, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 10px; 
+            border-radius: 8px; 
+            border: 1px solid #ccc; 
+            background: #fafafa; 
+            color: #333; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+        }
+        button { 
+            background: #2c3e50; 
+            color: #ffffff; 
+            font-weight: bold; 
+            border: none; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
+        button:active { transform: scale(0.95); }
+        
+        .btn-success { background: #27ae60 !important; }
+        .btn-danger { background: #e74c3c !important; }
+        .btn-warning { background: #f39c12 !important; }
+
+        .list-container { 
+            background: #ffffff; 
+            padding: 15px; 
+            border-radius: 15px; 
+            border: 1px solid #ddd; 
+        }
+        .absen-item { 
+            background: #fdfdfd; 
+            padding: 12px; 
+            border-radius: 12px; 
+            margin-bottom: 15px; 
+            display: flex; 
+            gap: 12px; 
+            border-left: 4px solid #2c3e50; 
+            border-bottom: 1px solid #eee; 
+            position: relative; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            align-items: flex-start; 
+        }
+        .absen-item img { 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 8px; 
+            object-fit: cover; 
+        }
+        .absen-info { flex: 1; min-width: 0; }
+        .absen-info b { 
+            display: block; 
+            color: #2c3e50; 
+            font-size: 14px; 
+        }
+        
+        .ket-text { 
+            font-size: 11px; 
+            color: #555; 
+            background: #f1f1f1; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            display: block; 
+            margin-top: 4px; 
+        }
+        .upd { 
+            font-size: 9px; 
+            color: #999; 
+            display: block; 
+            margin-top: 4px; 
+        }
+        .gps-status { 
+            font-size: 10px; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            display: inline-block;
+            margin: 4px 0;
+        }
+        .gps-aktif { background: #d4edda; color: #155724; }
+        .gps-mati { background: #f8d7da; color: #721c24; }
+        
+        .modal-login { 
+            display: flex; 
+            position: fixed; 
+            z-index: 3000; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.8); 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .modal-content { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 20px; 
+            width: 80%; 
+            max-width: 300px; 
+            text-align: center; 
+            animation: zoomIn 0.3s ease; 
+        }
+        @keyframes zoomIn { 
+            from { transform: scale(0.5); opacity: 0; } 
+            to { transform: scale(1); opacity: 1; } 
+        }
+
+        .footer-credit { 
+            text-align: center; 
+            padding: 20px 0; 
+            font-size: 12px; 
+            color: #7f8c8d; 
+            border-top: 1px solid #eee; 
+            margin-top: 20px; 
+        }
+        .footer-credit b { color: #2c3e50; }
+    </style>
+</head>
+
+<body>
+    <!-- Form Login Admin -->
+    <div class='modal-login' id='modalLogin'>
+        <div class='modal-content'>
+            <h3 style='margin-top:0; color:#2c3e50;'>LOGIN ADMIN</h3>
+            <input id='inputPassAdmin' placeholder='Masukkan Kode Akses' type='password'/>
+            <button onclick='cekLogin()'>MASUK</button>
+        </div>
+    </div>
+
+    <div id='kontenAdmin' style='display:none;'>
+        <div class='top-banner'>
+            <h1>ADMIN DASHBOARD</h1>
+            <p>FA DIGITAL STUDIO - Panel Pengelolaan Data</p>
+        </div>
+
+        <div class='container'>
+            <div class='card'>
+                <h2>Ringkasan Hari Ini</h2>
+                <div class='stat-row'>
+                    <div class='stat-card'>
+                        <div class='stat-number' id='jumlahHadir'>0</div>
+                        <div class='stat-label'>Hadir</div>
+                    </div>
+                    <div class='stat-card'>
+                        <div class='stat-number' id='jumlahOff'>0</div>
+                        <div class='stat-label'>Istirahat / Off</div>
+                    </div>
+                </div>
+                <button class='btn-success' onclick='generatePDF()'>UNDUH SEMUA DATA (PDF)</button>
+                <button class='btn-danger' onclick='hapusSemuaData()'>HAPUS SEMUA DATA HARI INI</button>
+                <a href='index.html' style='display:block; text-align:center; margin-top:10px; color:#2c3e50; text-decoration:none; font-weight:bold;'>← Kembali ke Halaman Absensi</a>
+            </div>
+
+            <div class='list-container'>
+                <h3 style='font-size: 15px; border-bottom: 2px solid #eee; padding-bottom: 8px;'>Daftar Absen Karyawan</h3>
+                <div id='daftarAdmin'>Memuat data...</div>
+            </div>
+
+            <div class='footer-credit'>
+                Copyright &#169; 2026 <b>Farid Aris</b>. All rights reserved.<br/>
+                FA DIGITAL STUDIO
+            </div>
+        </div>
+    </div>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js'></script>
+    
+    <script src='https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js'></script>
+    <script src='https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js'></script>
+
+    <script type='text/javascript'>
+    (function() {
+        const config = {
+            apiKey: "AIzaSyCMUw8KwCeSNY41i5EmmqKexzLp5RRMNoY",
+            authDomain: "daftar-absen-cc868.firebaseapp.com",
+            databaseURL: "https://daftar-absen-cc868-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "daftar-absen-cc868",
+            appId: "1:486404759637:web:120404fde3e0c1f1d0b4dc"
+        };
+
+        if (!firebase.apps.length) firebase.initializeApp(config);
+        const db = firebase.database();
+        const KODE_ADMIN = "farid1234"; // Sama dengan kode akses sebelumnya
+        let dataGlobal = {};
+
+        // Cek Login
+        window.cekLogin = function() {
+            const input = document.getElementById('inputPassAdmin').value;
+            if (input === KODE_ADMIN) {
+                document.getElementById('modalLogin').style.display = 'none';
+                document.getElementById('kontenAdmin').style.display = 'block';
+                muatDataAbsen();
+            } else {
+                alert("Kode Akses Salah!");
+            }
+        };
+
+        // Muat semua data absen
+        function muatDataAbsen() {
+            db.ref('absensi_driver').on('value', function(snapshot) {
+                const data = snapshot.val();
+                dataGlobal = data;
+                const wadah = document.getElementById('daftarAdmin');
+                let hadir = 0, off = 0;
+
+                if (!data) {
+                    wadah.innerHTML = "<p style='text-align:center; color:#888;'>Belum ada data absen hari ini.</p>";
+                    document.getElementById('jumlahHadir').textContent = "0";
+                    document.getElementById('jumlahOff').textContent = "0";
+                    return;
+                }
+
+                wadah.innerHTML = "";
+                const kunci = Object.keys(data).reverse();
+
+                kunci.forEach(function(id) {
+                    const item = data[id];
+                    if (!item.nama) return;
+
+                    if (item.status === "Hadir") hadir++;
+                    else off++;
+
+                    const statusGps = item.gps_active 
+                        ? '<span class="gps-status gps-aktif">GPS Aktif</span>' 
+                        : '<span class="gps-status gps-mati">GPS Mati</span>';
+
+                    const html = `
+                        <div class="absen-item">
+                            <img src="${item.foto}" alt="Foto"/>
+                            <div class="absen-info">
+                                <b>${item.nama}</b>
+                                <span style="font-size:12px; color:#666;">${item.status}</span>
+                                ${statusGps}
+                                <span class="ket-text">${item.keterangan}</span>
+                                <span class="upd">Terakhir Update: ${item.lastUpdate}</span>
+                                <a href="https://www.google.com/maps?q=${item.lat},${item.lon}" target="_blank" style="font-size:11px; color:#3498db;">Lihat Lokasi di Maps</a>
+                                <br>
+                                <button class="btn-danger" style="padding:4px 8px; font-size:11px; margin-top:5px;" onclick="hapusData('${id}')">Hapus Data Ini</button>
+                            </div>
+                        </div>
+                    `;
+                    wadah.insertAdjacentHTML('beforeend', html);
+                });
+
+                document.getElementById('jumlahHadir').textContent = hadir;
+                document.getElementById('jumlahOff').textContent = off;
+            });
+        }
+
+        // Hapus satu data
+        window.hapusData = function(id) {
+            if (confirm("Yakin ingin menghapus data ini?")) {
+                db.ref('absensi_driver/' + id).remove();
+            }
+        };
+
+        // Hapus semua data
+        window.hapusSemuaData = function() {
+            if (confirm("PERINGATAN! Semua data hari ini akan dihapus permanen. Lanjutkan?")) {
+                db.ref('absensi_driver').remove();
+                alert("Semua data berhasil dihapus!");
+            }
+        };
+
+        // Unduh PDF
+        window.generatePDF = function() {
+            if (!dataGlobal) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(16);
+            doc.text("LAPORAN ABSENSI HARIAN", 14, 15);
+            doc.setFontSize(12);
+            doc.text("FA DIGITAL STUDIO", 14, 22);
+            doc.setFontSize(10);
+            doc.text("Tanggal: " + new Date().toLocaleDateString('id-ID'), 14, 28);
+
+            const baris = [];
+            let nomor = 1;
+            Object.keys(dataGlobal).forEach((k) => {
+                const d = dataGlobal[k];
+                baris.push([
+                    nomor++,
+                    d.nama,
+                    d.status,
+                    d.keterangan,
+                    d.waktu,
+                    d.lastUpdate,
+                    `${d.lat}, ${d.lon}`
+                ]);
+            });
+
+            doc.autoTable({
+                startY: 35,
+                head: [['No', 'Nama', 'Status', 'Keterangan', 'Jam Masuk', 'Update', 'Koordinat']],
+                body: baris,
+                theme: 'striped',
+                headStyles: { fillColor: [44, 62, 80] }
+            });
+
+            doc.save("Laporan_Absensi_" + new Date().toLocaleDateString('id-ID') + ".pdf");
+        };
+
+    })();
+    </script>
+</body>
+</html>
