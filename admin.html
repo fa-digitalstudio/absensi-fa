@@ -132,7 +132,7 @@
         }
 
         /* Item Daftar */
-        .karyawan-item, .absen-item {
+        .karyawan-item, .absen-item, .log-item {
             background: #fdfdfd;
             padding: 12px;
             border-radius: 10px;
@@ -144,6 +144,8 @@
             align-items: flex-start;
         }
         .absen-item { border-left-color: #27ae60; }
+        .log-item.login { border-left-color: #3498db; }
+        .log-item.logout { border-left-color: #e67e22; }
         .item-info { flex: 1; min-width: 200px; }
         .item-nama { font-weight: bold; font-size: 15px; color: #2c3e50; }
         .item-detail { font-size: 13px; color: #555; margin-top: 3px; }
@@ -204,7 +206,7 @@
 </head>
 <body>
 
-<!-- Modal Login Admin - Selalu Tampil Pertama -->
+<!-- Modal Login Admin -->
 <div class="modal" id="modalLogin">
     <div class="modal-content">
         <h3 style="text-align:center; margin-bottom:15px;">🔒 Login Admin</h3>
@@ -218,6 +220,7 @@
     <a href="#" onclick="tampilkanMenu('tambah')">➕ Tambah Karyawan</a>
     <a href="#" onclick="tampilkanMenu('data')">👥 Data Karyawan</a>
     <a href="#" onclick="tampilkanMenu('absen')">📋 Absen Karyawan</a>
+    <a href="#" onclick="tampilkanMenu('log')">📜 Riwayat Login/Logout</a> <!-- Menu Baru -->
 </div>
 <div class="overlay" id="overlay" onclick="tutupMenu()"></div>
 
@@ -259,6 +262,16 @@
             <div id="daftarAbsen">Memuat data absen...</div>
         </div>
 
+        <!-- ✅ MENU BARU: Riwayat Login & Logout -->
+        <div class="card" id="menu-log" style="display:none;">
+            <div class="card-header">
+                <h2>Riwayat Login & Logout Karyawan</h2>
+                <input type="text" class="search-input" id="cariLog" placeholder="Cari nama / status...">
+                <button class="btn btn-success" onclick="unduhDataLog()">⬇️ Unduh Riwayat</button>
+            </div>
+            <div id="daftarLog">Memuat riwayat aktivitas...</div>
+        </div>
+
         <!-- Modal Edit -->
         <div class="modal" id="modalEdit" style="display:none;">
             <div class="modal-content">
@@ -279,7 +292,7 @@
     </div>
 </div>
 
-<!-- Pustaka - Diletakkan di akhir agar tidak menghalangi tampilan awal -->
+<!-- Pustaka -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -326,8 +339,10 @@ function tampilkanMenu(jenis) {
     document.getElementById("menu-tambah").style.display = jenis === "tambah" ? "block" : "none";
     document.getElementById("menu-data").style.display = jenis === "data" ? "block" : "none";
     document.getElementById("menu-absen").style.display = jenis === "absen" ? "block" : "none";
+    document.getElementById("menu-log").style.display = jenis === "log" ? "block" : "none";
     if (jenis === "data") muatKaryawan();
     if (jenis === "absen") muatAbsen();
+    if (jenis === "log") muatRiwayatAktivitas();
 }
 
 // --- Data Karyawan ---
@@ -376,31 +391,28 @@ function muatKaryawan() {
     });
 }
 
-// Pencarian Karyawan
+// --- Pencarian ---
 document.addEventListener("DOMContentLoaded", function() {
-    const cariKaryawan = document.getElementById("cariKaryawan");
-    if (cariKaryawan) {
-        cariKaryawan.addEventListener("input", function() {
-            const kata = this.value.toLowerCase();
-            const daftar = document.querySelectorAll("#daftarKaryawan .karyawan-item");
-            daftar.forEach(el => {
-                const teks = el.textContent.toLowerCase();
-                el.style.display = teks.includes(kata) ? "flex" : "none";
-            });
+    document.getElementById("cariKaryawan").addEventListener("input", function() {
+        const kata = this.value.toLowerCase();
+        document.querySelectorAll("#daftarKaryawan .karyawan-item").forEach(el => {
+            el.style.display = el.textContent.toLowerCase().includes(kata) ? "flex" : "none";
         });
-    }
+    });
 
-    const cariAbsen = document.getElementById("cariAbsen");
-    if (cariAbsen) {
-        cariAbsen.addEventListener("input", function() {
-            const kata = this.value.toLowerCase();
-            const daftar = document.querySelectorAll("#daftarAbsen .absen-item");
-            daftar.forEach(el => {
-                const teks = el.textContent.toLowerCase();
-                el.style.display = teks.includes(kata) ? "flex" : "none";
-            });
+    document.getElementById("cariAbsen").addEventListener("input", function() {
+        const kata = this.value.toLowerCase();
+        document.querySelectorAll("#daftarAbsen .absen-item").forEach(el => {
+            el.style.display = el.textContent.toLowerCase().includes(kata) ? "flex" : "none";
         });
-    }
+    });
+
+    document.getElementById("cariLog").addEventListener("input", function() {
+        const kata = this.value.toLowerCase();
+        document.querySelectorAll("#daftarLog .log-item").forEach(el => {
+            el.style.display = el.textContent.toLowerCase().includes(kata) ? "flex" : "none";
+        });
+    });
 });
 
 // --- Data Absen ---
@@ -436,6 +448,37 @@ function muatAbsen() {
     });
 }
 
+// ✅ FUNGSI BARU: Riwayat Login & Logout Real-Time
+function muatRiwayatAktivitas() {
+    db.ref("riwayat_aktivitas").orderByKey().limitToLast(100).on("value", snap => {
+        const data = snap.val() || {};
+        let html = "";
+        if (Object.keys(data).length === 0) {
+            html = "<p style='text-align:center; color:#888; padding:20px;'>Belum ada riwayat aktivitas.</p>";
+        } else {
+            Object.keys(data).reverse().forEach(k => {
+                const d = data[k];
+                if (!d.nama || !d.jenis) return;
+                const kelas = d.jenis === "login" ? "login" : "logout";
+                const ikon = d.jenis === "login" ? "🟢" : "🔴";
+                html += `
+                <div class="log-item ${kelas}">
+                    <div class="item-info">
+                        <div class="item-nama">${ikon} ${d.nama}</div>
+                        <div class="item-detail">Status: ${d.jenis.toUpperCase()}</div>
+                        <div class="item-detail">Waktu: ${d.waktu}</div>
+                        <div class="item-detail">Perangkat: ${d.perangkat || "Tidak diketahui"}</div>
+                        <div class="item-detail">IP/Lokasi: ${d.lokasi || "-"}</div>
+                    </div>
+                </div>`;
+            });
+        }
+        document.getElementById("daftarLog").innerHTML = html;
+    }, err => {
+        document.getElementById("daftarLog").innerHTML = "<p style='color:red;'>Gagal memuat riwayat: " + err.message + "</p>";
+    });
+}
+
 // --- Unduh Data ---
 async function unduhDataKaryawan() {
     try {
@@ -450,20 +493,11 @@ async function unduhDataKaryawan() {
         const data = snap.val() || {};
         const rows = [];
         let nomor = 1;
-        Object.values(data).forEach(d => {
-            rows.push([nomor++, d.nama || "-", d.hp || "-"]);
-        });
+        Object.values(data).forEach(d => rows.push([nomor++, d.nama || "-", d.hp || "-"]));
 
-        doc.autoTable({
-            head: [["No", "Nama", "Nomor HP"]],
-            body: rows,
-            startY: 30,
-            styles: { fontSize: 9 }
-        });
+        doc.autoTable({ head: [["No", "Nama", "Nomor HP"]], body: rows, startY: 30, styles: { fontSize: 9 } });
         doc.save("Data_Karyawan.pdf");
-    } catch (err) {
-        alert("Gagal mengunduh: " + err.message);
-    }
+    } catch (err) { alert("Gagal mengunduh: " + err.message); }
 }
 
 async function unduhDataAbsen() {
@@ -479,27 +513,31 @@ async function unduhDataAbsen() {
         const data = snap.val() || {};
         const rows = [];
         let nomor = 1;
-        Object.values(data).reverse().forEach(d => {
-            rows.push([
-                nomor++,
-                d.nama || "-",
-                d.status || "-",
-                d.waktu || "-",
-                d.keterangan || "-",
-                d.gps_active ? "Aktif" : "Tidak Aktif"
-            ]);
-        });
+        Object.values(data).reverse().forEach(d => rows.push([nomor++, d.nama || "-", d.status || "-", d.waktu || "-", d.keterangan || "-", d.gps_active ? "Aktif" : "Tidak Aktif"]));
 
-        doc.autoTable({
-            head: [["No", "Nama", "Status", "Waktu", "Keterangan", "GPS"]],
-            body: rows,
-            startY: 30,
-            styles: { fontSize: 9 }
-        });
+        doc.autoTable({ head: [["No", "Nama", "Status", "Waktu", "Keterangan", "GPS"]], body: rows, startY: 30, styles: { fontSize: 9 } });
         doc.save("Laporan_Absen.pdf");
-    } catch (err) {
-        alert("Gagal mengunduh: " + err.message);
-    }
+    } catch (err) { alert("Gagal mengunduh: " + err.message); }
+}
+
+async function unduhDataLog() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(14);
+        doc.text("Riwayat Login & Logout Karyawan", 14, 15);
+        doc.setFontSize(10);
+        doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 22);
+
+        const snap = await db.ref("riwayat_aktivitas").once("value");
+        const data = snap.val() || {};
+        const rows = [];
+        let nomor = 1;
+        Object.values(data).reverse().forEach(d => rows.push([nomor++, d.nama || "-", d.jenis?.toUpperCase() || "-", d.waktu || "-", d.perangkat || "-"]));
+
+        doc.autoTable({ head: [["No", "Nama", "Aktivitas", "Waktu", "Perangkat"]], body: rows, startY: 30, styles: { fontSize: 9 } });
+        doc.save("Riwayat_Login_Logout.pdf");
+    } catch (err) { alert("Gagal mengunduh: " + err.message); }
 }
 
 // --- Edit & Hapus ---
@@ -525,10 +563,7 @@ function simpanEdit() {
     const data = { nama, hp };
     if (sandi) data.sandi = sandi;
     db.ref("data_karyawan/" + idEdit).update(data)
-    .then(() => {
-        alert("Data diperbarui!");
-        tutupModalEdit();
-    })
+    .then(() => { alert("Data diperbarui!"); tutupModalEdit(); })
     .catch(err => alert("Gagal menyimpan: " + err.message));
 }
 
