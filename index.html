@@ -173,53 +173,6 @@
             background: #eee; 
         }
         .mini-map-box iframe { width: 100%; height: 100%; border: none; }
-        
-        .modal-pass { 
-            display: none; 
-            position: fixed; 
-            z-index: 3000; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.8); 
-            justify-content: center; 
-            align-items: center; 
-        }
-        .modal-content { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 20px; 
-            width: 80%; 
-            max-width: 300px; 
-            text-align: center; 
-            animation: zoomIn 0.3s ease; 
-        }
-        @keyframes zoomIn { 
-            from { transform: scale(0.5); opacity: 0; } 
-            to { transform: scale(1); opacity: 1; } 
-        }
-        
-        #loadingOverlay { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(255,255,255,0.9); 
-            z-index: 2000; 
-            justify-content: center; 
-            align-items: center; 
-            flex-direction: column; 
-        }
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-        
-        /* Style Tambahan untuk tombol PDF */
-        .btn-pdf { background: #27ae60 !important; margin-top: 10px !important; }
 
         .footer-credit { 
             text-align: center; 
@@ -240,16 +193,7 @@
     </div>
 
     <div class='container'>
-        <div class='modal-pass' id='modalPass'>
-            <div class='modal-content'>
-                <h3 style='margin-top:0; color:#2c3e50;'>Akses Admin</h3>
-                <input id='inputPass' placeholder='Kode Akses...' style='text-align:center;' type='password'/>
-                <div style='display:flex; gap:10px; margin-top:10px;'>
-                    <button onclick='tutupModal()' style='background:#95a5a6; flex:1;'>BATAL</button>
-                    <button onclick='konfirmasiHapus()' style='background:#e74c3c; flex:1;'>HAPUS</button>
-                </div>
-            </div>
-        </div>
+        <!-- Modal hapus sudah dihapus sepenuhnya -->
 
         <div id='loadingOverlay'>
             <div style='width: 40px; height: 40px; border: 4px solid #eee; border-top: 4px solid #e67e22; border-radius: 50%; animation: spin 1s linear infinite;'></div>
@@ -275,8 +219,7 @@
             <h3 style='font-size: 15px; border-bottom: 2px solid #eee; padding-bottom: 8px;'>Daftar Karyawan dan lokasi terkini</h3>
             <div id='daftarAbsen'>Memuat data...</div>
             
-            <!-- ✅ TOMBOL DOWNLOAD PDF SUDAH DIHAPUS -->
-            <button id='btnHapusSemua' onclick='bukaModal("SEMUA")' style='display:none; background:#2c3e50; margin-top:20px; font-size:11px;'>HAPUS SEMUA DATA</button>
+            <!-- ✅ TOMBOL HAPUS SEMUA DATA SUDAH DIHAPUS -->
         </div>
 
         <div class='footer-credit'>
@@ -306,10 +249,7 @@
 
         if (!firebase.apps.length) firebase.initializeApp(config);
         var db = firebase.database();
-        var KEY_ADM = "farid1234";
-        var idHapus = "";
         var currentWatchId = null;
-        var dataGlobal = {};
 
         function cekResetHarian() {
             var tglSekarang = new Date().toLocaleDateString('id-ID');
@@ -405,18 +345,16 @@
         db.ref('absensi_driver').orderByKey().limitToLast(20).on('value', function(s) {
             var c = document.getElementById('daftarAbsen');
             var data = s.val();
-            dataGlobal = data;
             
             if (!data) {
                 c.innerHTML = "Belum ada data.";
-                document.getElementById('btnHapusSemua').style.display = "none";
                 cachePos = {};
                 return;
             }
 
-            document.getElementById('btnHapusSemua').style.display = "block";
             var keys = Object.keys(data).reverse();
-            
+            c.innerHTML = "";
+
             keys.forEach(function(k) {
                 var i = data[k];
                 if(!i.nama) return;
@@ -426,58 +364,24 @@
                 
                 var mapUrl = "https://maps.google.com/maps?q=" + coord + "&hl=id&z=14&output=embed";
                 var gmapsUrl = "https://www.google.com/maps?q=" + coord;
-                
-                var el = document.getElementById('item-' + k);
-                var gpsWarningHtml = isGpsOff ? '<span class="gps-warning">⚠️ HP MATI / GPS TIDAK AKTIF</span>' : '';
 
-                if (!el) {
-                    var html = '<div class="absen-item" id="item-' + k + '">' +
-                        '<img src="' + i.foto + '" alt="Foto Karyawan" loading="lazy"/>' +
-                        '<div class="absen-info">' +
-                            '<span class="tracking-status">● Live</span>' +
-                            '<b>' + i.nama + ' (' + i.status + ')</b>' +
-                            '<span class="ket-text" id="k-' + k + '">' + i.keterangan + '</span>' +
-                            '<span class="upd" id="t-' + k + '">Update: ' + i.lastUpdate + '</span>' +
-                            '<div id="warn-' + k + '">' + gpsWarningHtml + '</div>' +
-                            '<a class="btn-lokasi" id="l-' + k + '" href="' + gmapsUrl + '" target="_blank">Buka Maps</a>' +
-                        '</div>' +
-                        '<div class="mini-map-box"><iframe id="f-' + k + '" src="' + mapUrl + '" title="Peta Lokasi" loading="lazy"></iframe></div>' +
-                    '</div>';
-                    if (c.innerHTML === "Memuat data..." || c.innerHTML === "Belum ada data.") c.innerHTML = "";
-                    c.insertAdjacentHTML('afterbegin', html);
-                    cachePos[k] = coord;
-                } else {
-                    document.getElementById('t-' + k).innerText = "Update: " + i.lastUpdate;
-                    document.getElementById('k-' + k).innerText = i.keterangan;
-                    document.getElementById('warn-' + k).innerHTML = gpsWarningHtml;
-                    if (cachePos[k] !== coord) {
-                        document.getElementById('f-' + k).src = mapUrl;
-                        document.getElementById('l-' + k).href = gmapsUrl;
-                        cachePos[k] = coord;
-                    }
-                }
-            });
+                var html = '<div class="absen-item" id="item-' + k + '">' +
+                    '<img src="' + i.foto + '" alt="Foto Karyawan" loading="lazy"/>' +
+                    '<div class="absen-info">' +
+                        '<span class="tracking-status">● Live</span>' +
+                        '<b>' + i.nama + ' (' + i.status + ')</b>' +
+                        '<span class="ket-text">' + i.keterangan + '</span>' +
+                        '<span class="upd">Update: ' + i.lastUpdate + '</span>' +
+                        (isGpsOff ? '<span class="gps-warning">⚠️ HP MATI / GPS TIDAK AKTIF</span>' : '') +
+                        '<a class="btn-lokasi" href="' + gmapsUrl + '" target="_blank">Buka Maps</a>' +
+                    '</div>' +
+                    '<div class="mini-map-box"><iframe src="' + mapUrl + '" title="Peta Lokasi" loading="lazy"></iframe></div>' +
+                '</div>';
 
-            var currentItems = c.querySelectorAll('.absen-item');
-            currentItems.forEach(function(e) { 
-                var id = e.id.replace('item-', '');
-                if (!data[id]) e.remove(); 
+                c.insertAdjacentHTML('beforeend', html);
+                cachePos[k] = coord;
             });
         });
-
-        // ✅ FUNGSI GENERATE PDF JUGA DIHAPUS DARI INDEX
-        window.bukaModal = function(id) { idHapus = id; document.getElementById('modalPass').style.display = 'flex'; document.getElementById('inputPass').focus(); };
-        window.tutupModal = function() { document.getElementById('modalPass').style.display = 'none'; document.getElementById('inputPass').value = ''; };
-        window.konfirmasiHapus = function() {
-            if (document.getElementById('inputPass').value == KEY_ADM) {
-                if (idHapus == "SEMUA") {
-                    db.ref('absensi_driver').remove().then(function() {
-                        document.getElementById('daftarAbsen').innerHTML = "Belum ada data.";
-                    });
-                }
-                tutupModal();
-            } else { alert("Kode Akses Salah!"); }
-        };
 
         window.addEventListener('beforeunload', function() {
             if (currentWatchId) navigator.geolocation.clearWatch(currentWatchId);
