@@ -1,4 +1,4 @@
-// config.js - Hanya berisi data konfigurasi
+// Konfigurasi Firebase dan Kode Admin
 const firebaseConfig = {
   apiKey: "AIzaSyCMUw8KwCeSNY41i5EmmqKexzLp5RRMNoY",
   authDomain: "daftar-absen-cc868.firebaseapp.com",
