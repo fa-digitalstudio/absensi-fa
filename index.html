@@ -275,13 +275,16 @@
             <h3 style='font-size: 15px; border-bottom: 2px solid #eee; padding-bottom: 8px;'>Daftar Karyawan dan lokasi terkini</h3>
             <div id='daftarAbsen'>Memuat data...</div>
             
-            <button class='btn-pdf' id='btnDownloadPDF' onclick='generatePDF()' style='display:none;'>DOWNLOAD DATA (PDF)</button>
+            <!-- ✅ TOMBOL DOWNLOAD PDF SUDAH DIHAPUS -->
             <button id='btnHapusSemua' onclick='bukaModal("SEMUA")' style='display:none; background:#2c3e50; margin-top:20px; font-size:11px;'>HAPUS SEMUA DATA</button>
         </div>
 
         <div class='footer-credit'>
+            <div style="text-align:center; margin:15px 0;">
+                <a href="admin.html" style="font-size:12px; color:#888; text-decoration:none;">🔒 Masuk ke Halaman Admin</a>
+            </div>
             Copyright &#169; 2026 <b>Farid Aris</b>. All rights reserved.<br/>
-            OJOL SANTUY KOLAKA
+            FA DIGITAL STUDIO
         </div>
     </div>
 
@@ -306,7 +309,7 @@
         var KEY_ADM = "farid1234";
         var idHapus = "";
         var currentWatchId = null;
-        var dataGlobal = {}; // Untuk simpan data buat PDF
+        var dataGlobal = {};
 
         function cekResetHarian() {
             var tglSekarang = new Date().toLocaleDateString('id-ID');
@@ -331,9 +334,11 @@
                 img.src = reader.result;
                 img.onload = function() {
                     var canvas = document.createElement('canvas');
-                    canvas.width = 400; canvas.height = (img.height/img.width)*400;
-                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                    resFoto = canvas.toDataURL('image/jpeg', 0.6);
+                    canvas.width = 320; 
+                    canvas.height = (img.height/img.width)*320;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    resFoto = canvas.toDataURL('image/jpeg', 0.4);
                     document.getElementById('preview').src = resFoto;
                     document.getElementById('preview').style.display = 'block';
                 }
@@ -353,7 +358,7 @@
                     });
                 }, function(err) {
                     db.ref('absensi_driver/' + k).update({ gps_active: false });
-                }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+                }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 });
             }
         }
 
@@ -393,25 +398,23 @@
             }, function() { 
                 document.getElementById('loadingOverlay').style.display = "none"; 
                 alert("GPS Gagal! Pastikan GPS Aktif."); 
-            }, { enableHighAccuracy: true });
+            }, { enableHighAccuracy: true, timeout: 15000 });
         };
 
         var cachePos = {};
-        db.ref('absensi_driver').on('value', function(s) {
+        db.ref('absensi_driver').orderByKey().limitToLast(20).on('value', function(s) {
             var c = document.getElementById('daftarAbsen');
             var data = s.val();
-            dataGlobal = data; // Update data global
+            dataGlobal = data;
             
             if (!data) {
                 c.innerHTML = "Belum ada data.";
                 document.getElementById('btnHapusSemua').style.display = "none";
-                document.getElementById('btnDownloadPDF').style.display = "none";
                 cachePos = {};
                 return;
             }
 
             document.getElementById('btnHapusSemua').style.display = "block";
-            document.getElementById('btnDownloadPDF').style.display = "block";
             var keys = Object.keys(data).reverse();
             
             keys.forEach(function(k) {
@@ -429,7 +432,7 @@
 
                 if (!el) {
                     var html = '<div class="absen-item" id="item-' + k + '">' +
-                        '<img src="' + i.foto + '" alt="Foto Driver"/>' +
+                        '<img src="' + i.foto + '" alt="Foto Karyawan" loading="lazy"/>' +
                         '<div class="absen-info">' +
                             '<span class="tracking-status">● Live</span>' +
                             '<b>' + i.nama + ' (' + i.status + ')</b>' +
@@ -437,9 +440,8 @@
                             '<span class="upd" id="t-' + k + '">Update: ' + i.lastUpdate + '</span>' +
                             '<div id="warn-' + k + '">' + gpsWarningHtml + '</div>' +
                             '<a class="btn-lokasi" id="l-' + k + '" href="' + gmapsUrl + '" target="_blank">Buka Maps</a>' +
-                            '<div style="margin-top:8px;"><button onclick="bukaModal(\''+k+'\')" style="width:auto; background:red; padding:4px 10px; font-size:10px; border-radius:4px;">Hapus</button></div>' +
                         '</div>' +
-                        '<div class="mini-map-box"><iframe id="f-' + k + '" src="' + mapUrl + '" title="Peta Lokasi"></iframe></div>' +
+                        '<div class="mini-map-box"><iframe id="f-' + k + '" src="' + mapUrl + '" title="Peta Lokasi" loading="lazy"></iframe></div>' +
                     '</div>';
                     if (c.innerHTML === "Memuat data..." || c.innerHTML === "Belum ada data.") c.innerHTML = "";
                     c.insertAdjacentHTML('afterbegin', html);
@@ -463,41 +465,7 @@
             });
         });
 
-        // FUNGSI GENERATE PDF
-        window.generatePDF = function() {
-            if (!dataGlobal) return;
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            doc.setFontSize(16);
-            doc.text("LAPORAN ABSENSI FA DIGITAL STUDIO", 14, 15);
-            doc.setFontSize(10);
-            doc.text("Tanggal: " + new Date().toLocaleDateString('id-ID'), 14, 22);
-
-            const tableRows = [];
-            Object.keys(dataGlobal).forEach((key, index) => {
-                const item = dataGlobal[key];
-                tableRows.push([
-                    index + 1,
-                    item.nama,
-                    item.status,
-                    item.keterangan,
-                    item.lastUpdate,
-                    item.lat + ", " + item.lon
-                ]);
-            });
-
-            doc.autoTable({
-                startY: 28,
-                head: [['No', 'Nama Karyawan', 'Status', 'Keterangan', 'Jam Update', 'Koordinat']],
-                body: tableRows,
-                theme: 'striped',
-                headStyles: { fillColor: [230, 126, 34] }
-            });
-
-            doc.save("Laporan_Absensi_fa_digitalstudio_" + new Date().toLocaleDateString('id-ID') + ".pdf");
-        };
-
+        // ✅ FUNGSI GENERATE PDF JUGA DIHAPUS DARI INDEX
         window.bukaModal = function(id) { idHapus = id; document.getElementById('modalPass').style.display = 'flex'; document.getElementById('inputPass').focus(); };
         window.tutupModal = function() { document.getElementById('modalPass').style.display = 'none'; document.getElementById('inputPass').value = ''; };
         window.konfirmasiHapus = function() {
@@ -506,12 +474,14 @@
                     db.ref('absensi_driver').remove().then(function() {
                         document.getElementById('daftarAbsen').innerHTML = "Belum ada data.";
                     });
-                } else {
-                    db.ref('absensi_driver').child(idHapus).remove();
                 }
                 tutupModal();
             } else { alert("Kode Akses Salah!"); }
         };
+
+        window.addEventListener('beforeunload', function() {
+            if (currentWatchId) navigator.geolocation.clearWatch(currentWatchId);
+        });
     })();
     </script>
 </body>
