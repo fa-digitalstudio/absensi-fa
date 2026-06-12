@@ -42,6 +42,7 @@
         }
         .btn-primary { background: #2c3e50; color: white; }
         .btn-success { background: #27ae60; color: white; }
+        .btn-warning { background: #f39c12; color: white; }
         .btn-danger { background: #e74c3c; color: white; }
         .info {
             background: #e8f4fd;
@@ -53,6 +54,30 @@
         }
         #halamanAbsen { display: none; }
         #halamanLogin { display: block; }
+        #areaKamera {
+            width: 100%;
+            max-width: 320px;
+            margin: 15px auto;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            display: none;
+        }
+        #hasilFoto {
+            width: 100%;
+            max-width: 200px;
+            margin: 10px auto;
+            border-radius: 8px;
+            display: none;
+        }
+        .status {
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status-ok { background: #d4edda; color: #155724; }
+        .status-warn { background: #fff3cd; color: #856404; }
     </style>
 </head>
 <body>
@@ -63,7 +88,7 @@
 </div>
 
 <div class="container">
-    <!-- Halaman Login Karyawan -->
+    <!-- Halaman Login -->
     <div class="card" id="halamanLogin">
         <h3>Login Karyawan</h3>
         <input type="text" id="inputHp" placeholder="Nomor HP" required>
@@ -71,28 +96,32 @@
         <button class="btn-primary" onclick="loginKaryawan()">Masuk</button>
     </div>
 
-    <!-- Halaman Setelah Login -->
+    <!-- Halaman Utama Setelah Login -->
     <div id="halamanAbsen">
         <div class="card">
             <h3>Selamat Datang, <span id="namaPengguna"></span></h3>
             <div class="info">
                 📅 Tanggal: <span id="tanggalSekarang"></span><br>
-                ⏰ Jam: <span id="jamSekarang"></span>
+                ⏰ Jam: <span id="jamSekarang"></span><br>
+                📍 Lokasi: <span id="teksLokasi">Belum diambil</span>
             </div>
-            <button class="btn-success" onclick="absenMasuk()">Absen Masuk</button>
-            <button class="btn-danger" onclick="absenPulang()">Absen Pulang</button>
+
+            <video id="areaKamera" autoplay playsinline></video>
+            <img id="hasilFoto" alt="Hasil Foto">
+
+            <button class="btn-success" onclick="mulaiAbsen('masuk')">✅ Absen Masuk</button>
+            <button class="btn-warning" onclick="mulaiAbsen('pulang')">🏁 Absen Pulang</button>
             <br><br>
-            <button class="btn-danger" onclick="logoutKaryawan()">Keluar / Logout</button>
+            <button class="btn-danger" onclick="logoutKaryawan()">🚪 Keluar / Logout</button>
         </div>
     </div>
 </div>
 
-<!-- Pustaka Firebase -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-// Konfigurasi Firebase
 const config = {
     apiKey: "AIzaSyCMUw8KwCeSNY41i5EmmqKexzLp5RRMNoY",
     authDomain: "daftar-absen-cc868.firebaseapp.com",
@@ -105,6 +134,8 @@ if (!firebase.apps.length) firebase.initializeApp(config);
 const db = firebase.database();
 
 let dataKaryawan = {};
+let posisi = { lat: null, lon: null, gpsAktif: false };
+let streamKamera = null;
 
 // Update waktu setiap detik
 setInterval(() => {
@@ -113,7 +144,7 @@ setInterval(() => {
     document.getElementById("jamSekarang").textContent = sekarang.toLocaleTimeString("id-ID");
 }, 1000);
 
-// Fungsi untuk dapatkan info perangkat sederhana
+// Info perangkat
 function dapatkanInfoPerangkat() {
     const ua = navigator.userAgent;
     if (ua.includes("Android")) return "HP Android";
@@ -123,29 +154,26 @@ function dapatkanInfoPerangkat() {
     return "Perangkat Tidak Dikenal";
 }
 
-// ✅ Fungsi Catat Aktivitas ke Riwayat
+// Catat aktivitas login/logout
 function catatAktivitas(nama, jenis) {
     const waktu = new Date().toLocaleString("id-ID");
-    const perangkat = dapatkanInfoPerangkat();
     db.ref("riwayat_aktivitas").push({
         nama: nama,
         jenis: jenis,
         waktu: waktu,
-        perangkat: perangkat,
-        lokasi: "Makassar, Sulawesi Selatan" // Bisa ditambah lokasi nyata jika butuh
+        perangkat: dapatkanInfoPerangkat(),
+        lokasi: posisi.lat && posisi.lon ? `${posisi.lat}, ${posisi.lon}` : "Tidak diketahui"
     });
 }
 
-// Login Karyawan
+// Login
 function loginKaryawan() {
     const hp = document.getElementById("inputHp").value.trim();
     const sandi = document.getElementById("inputSandi").value.trim();
-
     if (!hp || !sandi) return alert("Isi nomor HP dan sandi!");
 
     db.ref("data_karyawan").orderByChild("hp").equalTo(hp).once("value", snap => {
         if (!snap.exists()) return alert("Nomor HP tidak terdaftar!");
-
         const data = snap.val();
         const kunci = Object.keys(data)[0];
         const d = data[kunci];
@@ -155,41 +183,123 @@ function loginKaryawan() {
             document.getElementById("namaPengguna").textContent = d.nama;
             document.getElementById("halamanLogin").style.display = "none";
             document.getElementById("halamanAbsen").style.display = "block";
-
-            // ✅ Catat aktivitas LOGIN
             catatAktivitas(d.nama, "login");
+            ambilLokasi();
         } else {
             alert("Kata sandi salah!");
         }
     });
 }
 
-// Logout Karyawan
+// Logout
 function logoutKaryawan() {
     if (!confirm("Yakin ingin keluar?")) return;
-
-    // ✅ Catat aktivitas LOGOUT sebelum keluar
     catatAktivitas(dataKaryawan.nama, "logout");
-
-    // Reset tampilan
+    tutupKamera();
     document.getElementById("halamanLogin").style.display = "block";
     document.getElementById("halamanAbsen").style.display = "none";
     document.getElementById("inputHp").value = "";
     document.getElementById("inputSandi").value = "";
     dataKaryawan = {};
+    posisi = { lat: null, lon: null, gpsAktif: false };
+    document.getElementById("teksLokasi").textContent = "Belum diambil";
 }
 
-// Contoh fungsi absen (jika sudah ada bisa disesuaikan)
-function absenMasuk() {
-    alert("Fitur absen masuk siap digunakan");
-    // Tambahkan kode simpan absen seperti sebelumnya
+// Ambil lokasi GPS
+function ambilLokasi() {
+    if (!navigator.geolocation) {
+        document.getElementById("teksLokasi").textContent = "❌ GPS tidak didukung";
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        (hasil) => {
+            posisi.lat = hasil.coords.latitude.toFixed(6);
+            posisi.lon = hasil.coords.longitude.toFixed(6);
+            posisi.gpsAktif = true;
+            document.getElementById("teksLokasi").textContent = `${posisi.lat}, ${posisi.lon}`;
+        },
+        (err) => {
+            posisi.gpsAktif = false;
+            document.getElementById("teksLokasi").textContent = "⚠️ GPS tidak aktif";
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
 }
 
-function absenPulang() {
-    alert("Fitur absen pulang siap digunakan");
-    // Tambahkan kode simpan absen seperti sebelumnya
+// Buka kamera
+function bukaKamera() {
+    const video = document.getElementById("areaKamera");
+    document.getElementById("hasilFoto").style.display = "none";
+    video.style.display = "block";
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+    .then(stream => {
+        streamKamera = stream;
+        video.srcObject = stream;
+    })
+    .catch(() => alert("❌ Tidak bisa mengakses kamera!"));
+}
+
+// Tutup kamera
+function tutupKamera() {
+    if (streamKamera) {
+        streamKamera.getTracks().forEach(track => track.stop());
+        streamKamera = null;
+    }
+    document.getElementById("areaKamera").style.display = "none";
+}
+
+// Ambil foto
+function ambilFoto() {
+    const video = document.getElementById("areaKamera");
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    const dataFoto = canvas.toDataURL("image/jpeg", 0.8);
+
+    tutupKamera();
+    const img = document.getElementById("hasilFoto");
+    img.src = dataFoto;
+    img.style.display = "block";
+    return dataFoto;
+}
+
+// Mulai proses absen
+function mulaiAbsen(tipe) {
+    if (!posisi.lat || !posisi.lon) {
+        alert("⏳ Mengambil lokasi, tunggu sebentar...");
+        ambilLokasi();
+        setTimeout(() => mulaiAbsen(tipe), 2000);
+        return;
+    }
+    bukaKamera();
+    setTimeout(() => simpanAbsen(tipe), 1500);
+}
+
+// Simpan data absen ke Firebase
+function simpanAbsen(tipe) {
+    const foto = ambilFoto();
+    const sekarang = new Date();
+    const waktu = sekarang.toLocaleString("id-ID");
+
+    const dataAbsen = {
+        nama: dataKaryawan.nama,
+        hp: dataKaryawan.hp,
+        status: tipe === "masuk" ? "Absen Masuk" : "Absen Pulang",
+        waktu: waktu,
+        foto: foto,
+        lat: posisi.lat,
+        lon: posisi.lon,
+        gps_active: posisi.gpsAktif,
+        keterangan: "-",
+        tanggal: sekarang.toISOString().split("T")[0]
+    };
+
+    db.ref("riwayat_absen").push(dataAbsen)
+    .then(() => alert(`✅ Absen ${tipe} berhasil disimpan!`))
+    .catch(err => alert("❌ Gagal simpan: " + err.message));
 }
 </script>
-
 </body>
 </html>
