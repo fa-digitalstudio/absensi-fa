@@ -1,125 +1,236 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Absen Karyawan - FA DIGITAL STUDIO</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Admin Dashboard - FA DIGITAL STUDIO</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
-        body { background: #f4f7f6; color: #333; padding-bottom: 80px; }
-        .header {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: sans-serif; background: #f4f7f6; color: #333; padding-bottom: 80px; }
+
+        .top-header {
             background: linear-gradient(135deg, #2c3e50, #34495e);
             color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 0 0 20px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 999;
         }
-        .header h1 { font-size: 20px; margin-bottom: 5px; }
-        .header p { font-size: 13px; opacity: 0.9; }
+        .menu-toggle { font-size: 24px; cursor: pointer; }
+        .top-header h1 { font-size: 18px; font-weight: bold; }
+
+        .sidebar {
+            position: fixed;
+            top: 0; left: -260px;
+            width: 260px; height: 100vh;
+            background: #2c3e50; color: white;
+            padding-top: 60px;
+            transition: 0.3s;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+        }
+        .sidebar.open { left: 0; }
+        .sidebar a {
+            display: block;
+            padding: 14px 20px;
+            color: #ecf0f1;
+            text-decoration: none;
+            font-size: 15px;
+            border-bottom: 1px solid #34495e;
+        }
+        .sidebar a:hover { background: #3498db; padding-left: 25px; }
+        .overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .overlay.show { display: block; }
+
         .container { padding: 15px; }
         .card {
             background: white;
-            padding: 20px;
+            padding: 18px;
             border-radius: 12px;
             margin-bottom: 20px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
         }
-        h3 { margin-bottom: 15px; color: #2c3e50; text-align: center; }
-        input, button {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            font-size: 15px;
+        .card-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
         }
-        button {
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
+        h2 { font-size: 17px; color: #2c3e50; font-weight: bold; }
+        .search-input {
+            flex: 1; min-width: 200px;
+            padding: 10px 12px; border: 1px solid #ddd;
+            border-radius: 8px; font-size: 14px;
         }
-        .btn-primary { background: #2c3e50; color: white; }
+        .btn {
+            padding: 9px 14px; border: none;
+            border-radius: 8px; font-weight: bold;
+            cursor: pointer; font-size: 13px;
+        }
         .btn-success { background: #27ae60; color: white; }
         .btn-warning { background: #f39c12; color: white; }
         .btn-danger { background: #e74c3c; color: white; }
-        .info {
-            background: #e8f4fd;
+        .btn-secondary { background: #95a5a6; color: white; }
+
+        .karyawan-item, .log-item, .absen-item {
+            background: #fdfdfd;
             padding: 12px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-size: 14px;
-            color: #2980b9;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid #2c3e50;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-start;
         }
-        #halamanAbsen { display: none; }
-        #halamanLogin { display: block; }
-        #areaKamera {
-            width: 100%;
-            max-width: 320px;
-            margin: 15px auto;
-            border-radius: 8px;
-            border: 2px solid #ddd;
-            display: none;
+        .absen-item.masuk { border-left-color: #27ae60; }
+        .absen-item.pulang { border-left-color: #f39c12; }
+        .log-item.login { border-left-color: #3498db; }
+        .log-item.logout { border-left-color: #e67e22; }
+        .item-info { flex: 1; min-width: 200px; }
+        .item-nama { font-weight: bold; font-size: 15px; color: #2c3e50; }
+        .item-detail { font-size: 13px; color: #555; margin-top: 3px; }
+        .absen-item img {
+            width: 70px; height: 70px;
+            border-radius: 8px; object-fit: cover;
         }
-        #hasilFoto {
-            width: 100%;
-            max-width: 200px;
-            margin: 10px auto;
-            border-radius: 8px;
-            display: none;
+        .gps-aktif { color: #27ae60; font-weight: bold; }
+        .gps-mati { color: #e74c3c; font-weight: bold; }
+        .btn-lokasi {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 11px;
+            color: #3498db;
+            text-decoration: none;
+            border: 1px solid #3498db;
+            padding: 3px 7px;
+            border-radius: 4px;
         }
-        .status {
-            padding: 8px;
-            border-radius: 6px;
-            text-align: center;
-            margin: 10px 0;
-            font-weight: bold;
+
+        .modal {
+            display: flex;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
         }
-        .status-ok { background: #d4edda; color: #155724; }
-        .status-warn { background: #fff3cd; color: #856404; }
+        .modal-content {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            width: 90%; max-width: 320px;
+        }
+        .modal-aksi { display: flex; gap: 10px; margin-top: 15px; }
+        .footer { text-align: center; padding: 15px; font-size: 12px; color: #777; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>FA DIGITAL STUDIO</h1>
-    <p>Sistem Absensi Karyawan</p>
+<!-- Modal Login Admin -->
+<div class="modal" id="modalLogin">
+    <div class="modal-content">
+        <h3 style="text-align:center; margin-bottom:15px;">🔒 Login Admin</h3>
+        <input type="password" id="passAdmin" placeholder="Masukkan Kode Akses" required>
+        <button class="btn btn-success" onclick="loginAdmin()">Masuk</button>
+    </div>
 </div>
 
-<div class="container">
-    <!-- Halaman Login -->
-    <div class="card" id="halamanLogin">
-        <h3>Login Karyawan</h3>
-        <input type="text" id="inputHp" placeholder="Nomor HP" required>
-        <input type="password" id="inputSandi" placeholder="Kata Sandi" required>
-        <button class="btn-primary" onclick="loginKaryawan()">Masuk</button>
+<!-- Sidebar Menu -->
+<div class="sidebar" id="sidebar">
+    <a href="#" onclick="tampilkanMenu('tambah')">➕ Tambah Karyawan</a>
+    <a href="#" onclick="tampilkanMenu('data')">👥 Data Karyawan</a>
+    <a href="#" onclick="tampilkanMenu('riwayat-absen')">📋 Riwayat Absen</a>
+    <a href="#" onclick="tampilkanMenu('riwayat-log')">📜 Riwayat Login/Logout</a>
+</div>
+<div class="overlay" id="overlay" onclick="tutupMenu()"></div>
+
+<!-- Konten Utama -->
+<div id="kontenAdmin" style="display:none;">
+    <div class="top-header">
+        <div class="menu-toggle" onclick="bukaMenu()">☰</div>
+        <h1>FA DIGITAL STUDIO</h1>
     </div>
 
-    <!-- Halaman Utama Setelah Login -->
-    <div id="halamanAbsen">
-        <div class="card">
-            <h3>Selamat Datang, <span id="namaPengguna"></span></h3>
-            <div class="info">
-                📅 Tanggal: <span id="tanggalSekarang"></span><br>
-                ⏰ Jam: <span id="jamSekarang"></span><br>
-                📍 Lokasi: <span id="teksLokasi">Belum diambil</span>
-            </div>
-
-            <video id="areaKamera" autoplay playsinline></video>
-            <img id="hasilFoto" alt="Hasil Foto">
-
-            <button class="btn-success" onclick="mulaiAbsen('masuk')">✅ Absen Masuk</button>
-            <button class="btn-warning" onclick="mulaiAbsen('pulang')">🏁 Absen Pulang</button>
-            <br><br>
-            <button class="btn-danger" onclick="logoutKaryawan()">🚪 Keluar / Logout</button>
+    <div class="container">
+        <!-- Menu Tambah Karyawan -->
+        <div class="card" id="menu-tambah" style="display:none;">
+            <h2>Tambah Karyawan Baru</h2>
+            <input type="text" id="namaBaru" placeholder="Nama Lengkap">
+            <input type="text" id="hpBaru" placeholder="Nomor HP">
+            <input type="password" id="sandiBaru" placeholder="Kata Sandi">
+            <button class="btn btn-success" onclick="simpanKaryawan()">Simpan Data</button>
         </div>
+
+        <!-- Menu Data Karyawan -->
+        <div class="card" id="menu-data" style="display:none;">
+            <div class="card-header">
+                <h2>Daftar Data Karyawan</h2>
+                <input type="text" class="search-input" id="cariKaryawan" placeholder="Cari nama / HP...">
+                <button class="btn btn-success" onclick="unduhDataKaryawan()">⬇️ Unduh Data</button>
+            </div>
+            <div id="daftarKaryawan">Memuat data...</div>
+        </div>
+
+        <!-- Menu Riwayat Absen -->
+        <div class="card" id="menu-riwayat-absen" style="display:none;">
+            <div class="card-header">
+                <h2>Riwayat Absen Masuk & Pulang</h2>
+                <input type="text" class="search-input" id="cariAbsen" placeholder="Cari nama / status...">
+                <button class="btn btn-success" onclick="unduhRiwayatAbsen()">⬇️ Unduh Laporan</button>
+            </div>
+            <div id="daftarRiwayatAbsen">Memuat data...</div>
+        </div>
+
+        <!-- Menu Riwayat Login/Logout -->
+        <div class="card" id="menu-riwayat-log" style="display:none;">
+            <div class="card-header">
+                <h2>Riwayat Login & Logout</h2>
+                <input type="text" class="search-input" id="cariLog" placeholder="Cari nama / aktivitas...">
+                <button class="btn btn-success" onclick="unduhRiwayatLog()">⬇️ Unduh Riwayat</button>
+            </div>
+            <div id="daftarRiwayatLog">Memuat data...</div>
+        </div>
+
+        <!-- Modal Edit -->
+        <div class="modal" id="modalEdit" style="display:none;">
+            <div class="modal-content">
+                <h3>Ubah Data Karyawan</h3>
+                <input type="text" id="editNama" placeholder="Nama Lengkap">
+                <input type="text" id="editHp" placeholder="Nomor HP">
+                <input type="password" id="editSandi" placeholder="Kata Sandi Baru">
+                <div class="modal-aksi">
+                    <button class="btn btn-secondary" onclick="tutupModalEdit()">Batal</button>
+                    <button class="btn btn-warning" onclick="simpanEdit()">Simpan</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">&copy; 2026 FA DIGITAL STUDIO</div>
     </div>
 </div>
 
-<!-- Firebase -->
+<!-- Pustaka -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
 <script>
 const config = {
@@ -132,174 +243,147 @@ const config = {
 
 if (!firebase.apps.length) firebase.initializeApp(config);
 const db = firebase.database();
+const KODE_ADMIN = "farid1234";
+let idEdit = null;
 
-let dataKaryawan = {};
-let posisi = { lat: null, lon: null, gpsAktif: false };
-let streamKamera = null;
-
-// Update waktu setiap detik
-setInterval(() => {
-    const sekarang = new Date();
-    document.getElementById("tanggalSekarang").textContent = sekarang.toLocaleDateString("id-ID");
-    document.getElementById("jamSekarang").textContent = sekarang.toLocaleTimeString("id-ID");
-}, 1000);
-
-// Info perangkat
-function dapatkanInfoPerangkat() {
-    const ua = navigator.userAgent;
-    if (ua.includes("Android")) return "HP Android";
-    if (ua.includes("iPhone") || ua.includes("iPad")) return "iPhone / iPad";
-    if (ua.includes("Windows")) return "Komputer Windows";
-    if (ua.includes("Mac")) return "Komputer Mac";
-    return "Perangkat Tidak Dikenal";
+// Login Admin
+function loginAdmin() {
+    const input = document.getElementById("passAdmin").value.trim();
+    if (input === KODE_ADMIN) {
+        document.getElementById("modalLogin").style.display = "none";
+        document.getElementById("kontenAdmin").style.display = "block";
+        tampilkanMenu("data");
+    } else alert("Kode akses salah!");
 }
 
-// Catat aktivitas login/logout
-function catatAktivitas(nama, jenis) {
-    const waktu = new Date().toLocaleString("id-ID");
-    db.ref("riwayat_aktivitas").push({
-        nama: nama,
-        jenis: jenis,
-        waktu: waktu,
-        perangkat: dapatkanInfoPerangkat(),
-        lokasi: posisi.lat && posisi.lon ? `${posisi.lat}, ${posisi.lon}` : "Tidak diketahui"
-    });
+// Menu
+function bukaMenu() { document.getElementById("sidebar").classList.add("open"); document.getElementById("overlay").classList.add("show"); }
+function tutupMenu() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("overlay").classList.remove("show"); }
+function tampilkanMenu(jenis) {
+    tutupMenu();
+    document.querySelectorAll(".card[id^='menu-']").forEach(el => el.style.display = "none");
+    document.getElementById("menu-" + jenis).style.display = "block";
+    if (jenis === "data") muatKaryawan();
+    if (jenis === "riwayat-absen") muatRiwayatAbsen();
+    if (jenis === "riwayat-log") muatRiwayatLog();
 }
 
-// Login
-function loginKaryawan() {
-    const hp = document.getElementById("inputHp").value.trim();
-    const sandi = document.getElementById("inputSandi").value.trim();
-    if (!hp || !sandi) return alert("Isi nomor HP dan sandi!");
-
+// Data Karyawan
+function simpanKaryawan() {
+    const nama = document.getElementById("namaBaru").value.trim();
+    const hp = document.getElementById("hpBaru").value.trim();
+    const sandi = document.getElementById("sandiBaru").value.trim();
+    if (!nama || !hp || !sandi) return alert("Isi semua kolom!");
     db.ref("data_karyawan").orderByChild("hp").equalTo(hp).once("value", snap => {
-        if (!snap.exists()) return alert("Nomor HP tidak terdaftar!");
-        const data = snap.val();
-        const kunci = Object.keys(data)[0];
-        const d = data[kunci];
-
-        if (d.sandi === sandi) {
-            dataKaryawan = d;
-            document.getElementById("namaPengguna").textContent = d.nama;
-            document.getElementById("halamanLogin").style.display = "none";
-            document.getElementById("halamanAbsen").style.display = "block";
-            catatAktivitas(d.nama, "login");
-            ambilLokasi();
-        } else {
-            alert("Kata sandi salah!");
-        }
+        if (snap.exists()) return alert("Nomor HP sudah terdaftar!");
+        db.ref("data_karyawan").push({ nama, hp, sandi }).then(() => {
+            alert("Berhasil ditambahkan!");
+            ["namaBaru","hpBaru","sandiBaru"].forEach(id => document.getElementById(id).value = "");
+        });
     });
 }
 
-// Logout
-function logoutKaryawan() {
-    if (!confirm("Yakin ingin keluar?")) return;
-    catatAktivitas(dataKaryawan.nama, "logout");
-    tutupKamera();
-    document.getElementById("halamanLogin").style.display = "block";
-    document.getElementById("halamanAbsen").style.display = "none";
-    document.getElementById("inputHp").value = "";
-    document.getElementById("inputSandi").value = "";
-    dataKaryawan = {};
-    posisi = { lat: null, lon: null, gpsAktif: false };
-    document.getElementById("teksLokasi").textContent = "Belum diambil";
+function muatKaryawan() {
+    db.ref("data_karyawan").on("value", snap => {
+        const data = snap.val() || {};
+        let html = "";
+        if (Object.keys(data).length === 0) html = "<p style='text-align:center; color:#888;'>Belum ada data karyawan.</p>";
+        else Object.keys(data).forEach(k => {
+            const d = data[k];
+            html += `<div class="karyawan-item"><div class="item-info"><div class="item-nama">${d.nama}</div><div class="item-detail">HP: ${d.hp}</div></div><div class="item-aksi"><button class="btn btn-warning" onclick="bukaEdit('${k}','${d.nama}','${d.hp}')">Edit</button><button class="btn btn-danger" onclick="hapusKaryawan('${k}')">Hapus</button></div></div>`;
+        });
+        document.getElementById("daftarKaryawan").innerHTML = html;
+    });
 }
 
-// Ambil lokasi GPS
-function ambilLokasi() {
-    if (!navigator.geolocation) {
-        document.getElementById("teksLokasi").textContent = "❌ GPS tidak didukung";
-        return;
-    }
-    navigator.geolocation.getCurrentPosition(
-        (hasil) => {
-            posisi.lat = hasil.coords.latitude.toFixed(6);
-            posisi.lon = hasil.coords.longitude.toFixed(6);
-            posisi.gpsAktif = true;
-            document.getElementById("teksLokasi").textContent = `${posisi.lat}, ${posisi.lon}`;
-        },
-        (err) => {
-            posisi.gpsAktif = false;
-            document.getElementById("teksLokasi").textContent = "⚠️ GPS tidak aktif";
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+// Riwayat Absen
+function muatRiwayatAbsen() {
+    db.ref("riwayat_absen").orderByKey().limitToLast(100).on("value", snap => {
+        const data = snap.val() || {};
+        let html = "";
+        if (Object.keys(data).length === 0) html = "<p style='text-align:center; color:#888; padding:20px;'>Belum ada riwayat absen.</p>";
+        else Object.keys(data).reverse().forEach(k => {
+            const d = data[k];
+            const kelas = d.status.includes("Masuk") ? "masuk" : "pulang";
+            const gps = d.gps_active ? `<span class="gps-aktif">● Aktif</span>` : `<span class="gps-mati">⚠️ Mati</span>`;
+            const gmaps = `https://www.google.com/maps?q=${d.lat},${d.lon}`;
+            html += `<div class="absen-item ${kelas}"><img src="${d.foto}" alt="Foto Absen"><div class="item-info"><div class="item-nama">${d.nama}</div><div class="item-detail">Status: ${d.status}</div><div class="item-detail">Waktu: ${d.waktu}</div><div class="item-detail">Lokasi: ${d.lat}, ${d.lon}</div><div class="item-detail">GPS: ${gps}</div><a href="${gmaps}" target="_blank" class="btn-lokasi">Buka Peta</a></div></div>`;
+        });
+        document.getElementById("daftarRiwayatAbsen").innerHTML = html;
+    });
 }
 
-// Buka kamera
-function bukaKamera() {
-    const video = document.getElementById("areaKamera");
-    document.getElementById("hasilFoto").style.display = "none";
-    video.style.display = "block";
-
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-    .then(stream => {
-        streamKamera = stream;
-        video.srcObject = stream;
-    })
-    .catch(() => alert("❌ Tidak bisa mengakses kamera!"));
+// Riwayat Login/Logout
+function muatRiwayatLog() {
+    db.ref("riwayat_aktivitas").orderByKey().limitToLast(100).on("value", snap => {
+        const data = snap.val() || {};
+        let html = "";
+        if (Object.keys(data).length === 0) html = "<p style='text-align:center; color:#888; padding:20px;'>Belum ada riwayat aktivitas.</p>";
+        else Object.keys(data).reverse().forEach(k => {
+            const d = data[k];
+            const kelas = d.jenis === "login" ? "login" : "logout";
+            const ikon = d.jenis === "login" ? "🟢" : "🔴";
+            html += `<div class="log-item ${kelas}"><div class="item-info"><div class="item-nama">${ikon} ${d.nama}</div><div class="item-detail">Jenis: ${d.jenis.toUpperCase()}</div><div class="item-detail">Waktu: ${d.waktu}</div><div class="item-detail">Perangkat: ${d.perangkat}</div></div></div>`;
+        });
+        document.getElementById("daftarRiwayatLog").innerHTML = html;
+    });
 }
 
-// Tutup kamera
-function tutupKamera() {
-    if (streamKamera) {
-        streamKamera.getTracks().forEach(track => track.stop());
-        streamKamera = null;
-    }
-    document.getElementById("areaKamera").style.display = "none";
+// Pencarian
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("cariKaryawan").addEventListener("input", () => {
+        const kata = document.getElementById("cariKaryawan").value.toLowerCase();
+        document.querySelectorAll("#daftarKaryawan .karyawan-item").forEach(el => el.style.display = el.textContent.toLowerCase().includes(kata) ? "flex" : "none");
+    });
+    document.getElementById("cariAbsen").addEventListener("input", () => {
+        const kata = document.getElementById("cariAbsen").value.toLowerCase();
+        document.querySelectorAll("#daftarRiwayatAbsen .absen-item").forEach(el => el.style.display = el.textContent.toLowerCase().includes(kata) ? "flex" : "none");
+    });
+    document.getElementById("cariLog").addEventListener("input", () => {
+        const kata = document.getElementById("cariLog").value.toLowerCase();
+        document.querySelectorAll("#daftarRiwayatLog .log-item").forEach(el => el.style.display = el.textContent.toLowerCase().includes(kata) ? "flex" : "none");
+    });
+});
+
+// Unduh Data
+async function unduhDataKaryawan() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(14); doc.text("Daftar Karyawan", 14, 15); doc.setFontSize(10); doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 22);
+    const snap = await db.ref("data_karyawan").once("value");
+    const rows = []; let no = 1;
+    Object.values(snap.val() || {}).forEach(d => rows.push([no++, d.nama, d.hp]));
+    doc.autoTable({ head: [["No", "Nama", "HP"]], body: rows, startY: 30, styles: { fontSize: 9 } });
+    doc.save("Data_Karyawan.pdf");
 }
 
-// Ambil foto
-function ambilFoto() {
-    const video = document.getElementById("areaKamera");
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-    const dataFoto = canvas.toDataURL("image/jpeg", 0.8);
-
-    tutupKamera();
-    const img = document.getElementById("hasilFoto");
-    img.src = dataFoto;
-    img.style.display = "block";
-    return dataFoto;
+async function unduhRiwayatAbsen() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(14); doc.text("Riwayat Absen", 14, 15); doc.setFontSize(10); doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 22);
+    const snap = await db.ref("riwayat_absen").once("value");
+    const rows = []; let no = 1;
+    Object.values(snap.val() || {}).reverse().forEach(d => rows.push([no++, d.nama, d.status, d.waktu, `${d.lat}, ${d.lon}`, d.gps_active ? "Aktif" : "Mati"]));
+    doc.autoTable({ head: [["No", "Nama", "Status", "Waktu", "Lokasi", "GPS"]], body: rows, startY: 30, styles: { fontSize: 9 } });
+    doc.save("Riwayat_Absen.pdf");
 }
 
-// Mulai proses absen
-function mulaiAbsen(tipe) {
-    if (!posisi.lat || !posisi.lon) {
-        alert("⏳ Mengambil lokasi, tunggu sebentar...");
-        ambilLokasi();
-        setTimeout(() => mulaiAbsen(tipe), 2000);
-        return;
-    }
-    bukaKamera();
-    setTimeout(() => simpanAbsen(tipe), 1500);
+async function unduhRiwayatLog() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(14); doc.text("Riwayat Login Logout", 14, 15); doc.setFontSize(10); doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 22);
+    const snap = await db.ref("riwayat_aktivitas").once("value");
+    const rows = []; let no = 1;
+    Object.values(snap.val() || {}).reverse().forEach(d => rows.push([no++, d.nama, d.jenis.toUpperCase(), d.waktu, d.perangkat]));
+    doc.autoTable({ head: [["No", "Nama", "Aktivitas", "Waktu", "Perangkat"]], body: rows, startY: 30, styles: { fontSize: 9 } });
+    doc.save("Riwayat_Login_Logout.pdf");
 }
 
-// Simpan data absen ke Firebase
-function simpanAbsen(tipe) {
-    const foto = ambilFoto();
-    const sekarang = new Date();
-    const waktu = sekarang.toLocaleString("id-ID");
-
-    const dataAbsen = {
-        nama: dataKaryawan.nama,
-        hp: dataKaryawan.hp,
-        status: tipe === "masuk" ? "Absen Masuk" : "Absen Pulang",
-        waktu: waktu,
-        foto: foto,
-        lat: posisi.lat,
-        lon: posisi.lon,
-        gps_active: posisi.gpsAktif,
-        keterangan: "-",
-        tanggal: sekarang.toISOString().split("T")[0]
-    };
-
-    db.ref("riwayat_absen").push(dataAbsen)
-    .then(() => alert(`✅ Absen ${tipe} berhasil disimpan!`))
-    .catch(err => alert("❌ Gagal simpan: " + err.message));
-}
+// Edit & Hapus
+function bukaEdit(id, nama, hp) { idEdit = id; document.getElementById("editNama").value = nama; document.getElementById("editHp").value = hp; document.getElementById("modalEdit").style.display = "flex"; }
+function tutupModalEdit() { document.getElementById("modalEdit").style.display = "none"; idEdit = null; }
+function simpanEdit() { const nama = document.getElementById("editNama").value.trim(); const hp = document.getElementById("editHp").value.trim(); const sandi = document.getElementById("editSandi").value.trim(); if (!nama || !hp) return alert("Nama & HP tidak boleh kosong!"); const data = { nama, hp }; if (sandi) data.sandi = sandi; db.ref("data_karyawan/" + idEdit).update(data).then(() => { alert("Data disimpan!"); tutupModalEdit(); }); }
+function hapusKaryawan(id) { if (!confirm("Yakin hapus?")) return; db.ref("data_karyawan/" + id).remove(); }
 </script>
 </body>
 </html>
