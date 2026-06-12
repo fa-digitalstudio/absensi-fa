@@ -171,7 +171,7 @@
 
         /* Modal */
         .modal {
-            display: none;
+            display: flex;
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
@@ -204,7 +204,7 @@
 </head>
 <body>
 
-<!-- Modal Login Admin -->
+<!-- Modal Login Admin - Selalu Tampil Pertama -->
 <div class="modal" id="modalLogin">
     <div class="modal-content">
         <h3 style="text-align:center; margin-bottom:15px;">🔒 Login Admin</h3>
@@ -260,7 +260,7 @@
         </div>
 
         <!-- Modal Edit -->
-        <div class="modal" id="modalEdit">
+        <div class="modal" id="modalEdit" style="display:none;">
             <div class="modal-content">
                 <h3>Ubah Data Karyawan</h3>
                 <input type="text" id="editNama" placeholder="Nama Lengkap">
@@ -279,11 +279,11 @@
     </div>
 </div>
 
-<!-- Library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<!-- Pustaka - Diletakkan di akhir agar tidak menghalangi tampilan awal -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
 <script>
 const config = {
@@ -301,12 +301,14 @@ let idEdit = null;
 
 // --- Fungsi Menu & Login ---
 function loginAdmin() {
-    const input = document.getElementById("passAdmin").value;
+    const input = document.getElementById("passAdmin").value.trim();
     if (input === KODE_ADMIN) {
         document.getElementById("modalLogin").style.display = "none";
         document.getElementById("kontenAdmin").style.display = "block";
         tampilkanMenu("data");
-    } else alert("Kode akses salah!");
+    } else {
+        alert("Kode akses salah!");
+    }
 }
 
 function bukaMenu() {
@@ -341,7 +343,8 @@ function simpanKaryawan() {
         .then(() => {
             alert("Berhasil ditambahkan!");
             ["namaBaru","hpBaru","sandiBaru"].forEach(id => document.getElementById(id).value = "");
-        });
+        })
+        .catch(err => alert("Gagal menyimpan: " + err.message));
     });
 }
 
@@ -349,33 +352,55 @@ function muatKaryawan() {
     db.ref("data_karyawan").on("value", snap => {
         const data = snap.val() || {};
         let html = "";
-        if (Object.keys(data).length === 0) html = "<p style='text-align:center; color:#888;'>Belum ada data karyawan.</p>";
-        else Object.keys(data).forEach(k => {
-            const d = data[k];
-            html += `
-            <div class="karyawan-item">
-                <div class="item-info">
-                    <div class="item-nama">${d.nama}</div>
-                    <div class="item-detail">HP: ${d.hp}</div>
-                </div>
-                <div class="item-aksi">
-                    <button class="btn btn-warning" onclick="bukaEdit('${k}','${d.nama}','${d.hp}')">Edit</button>
-                    <button class="btn btn-danger" onclick="hapusKaryawan('${k}')">Hapus</button>
-                </div>
-            </div>`;
-        });
+        if (Object.keys(data).length === 0) {
+            html = "<p style='text-align:center; color:#888; padding:20px;'>Belum ada data karyawan.</p>";
+        } else {
+            Object.keys(data).forEach(k => {
+                const d = data[k];
+                html += `
+                <div class="karyawan-item">
+                    <div class="item-info">
+                        <div class="item-nama">${d.nama || "-"}</div>
+                        <div class="item-detail">HP: ${d.hp || "-"}</div>
+                    </div>
+                    <div class="item-aksi">
+                        <button class="btn btn-warning" onclick="bukaEdit('${k}','${d.nama || ""}','${d.hp || ""}')">Edit</button>
+                        <button class="btn btn-danger" onclick="hapusKaryawan('${k}')">Hapus</button>
+                    </div>
+                </div>`;
+            });
+        }
         document.getElementById("daftarKaryawan").innerHTML = html;
+    }, err => {
+        document.getElementById("daftarKaryawan").innerHTML = "<p style='color:red;'>Gagal memuat data: " + err.message + "</p>";
     });
 }
 
 // Pencarian Karyawan
-document.getElementById("cariKaryawan").addEventListener("input", function() {
-    const kata = this.value.toLowerCase();
-    const daftar = document.querySelectorAll("#daftarKaryawan .karyawan-item");
-    daftar.forEach(el => {
-        const teks = el.textContent.toLowerCase();
-        el.style.display = teks.includes(kata) ? "flex" : "none";
-    });
+document.addEventListener("DOMContentLoaded", function() {
+    const cariKaryawan = document.getElementById("cariKaryawan");
+    if (cariKaryawan) {
+        cariKaryawan.addEventListener("input", function() {
+            const kata = this.value.toLowerCase();
+            const daftar = document.querySelectorAll("#daftarKaryawan .karyawan-item");
+            daftar.forEach(el => {
+                const teks = el.textContent.toLowerCase();
+                el.style.display = teks.includes(kata) ? "flex" : "none";
+            });
+        });
+    }
+
+    const cariAbsen = document.getElementById("cariAbsen");
+    if (cariAbsen) {
+        cariAbsen.addEventListener("input", function() {
+            const kata = this.value.toLowerCase();
+            const daftar = document.querySelectorAll("#daftarAbsen .absen-item");
+            daftar.forEach(el => {
+                const teks = el.textContent.toLowerCase();
+                el.style.display = teks.includes(kata) ? "flex" : "none";
+            });
+        });
+    }
 });
 
 // --- Data Absen ---
@@ -383,98 +408,105 @@ function muatAbsen() {
     db.ref("absensi_driver").orderByKey().limitToLast(50).on("value", snap => {
         const data = snap.val() || {};
         let html = "";
-        if (Object.keys(data).length === 0) html = "<p style='text-align:center; color:#888;'>Belum ada absen hari ini.</p>";
-        else Object.keys(data).reverse().forEach(k => {
-            const d = data[k];
-            if (!d.nama) return;
-            const gps = d.gps_active ? `<span class="gps-aktif">● Aktif</span>` : `<span class="gps-mati">⚠️ Mati</span>`;
-            const gmaps = `https://www.google.com/maps?q=${d.lat || 0},${d.lon || 0}`;
-            html += `
-            <div class="absen-item">
-                <img src="${d.foto}" alt="Foto Absen">
-                <div class="item-info">
-                    <div class="item-nama">${d.nama} (${d.status})</div>
-                    <div class="item-detail">Waktu: ${d.waktu}</div>
-                    <div class="item-detail">Update: ${d.lastUpdate}</div>
-                    <div class="item-detail">Keterangan: ${d.keterangan || "-"}</div>
-                    <div class="item-detail">GPS: ${gps}</div>
-                    <a href="${gmaps}" target="_blank" class="btn-lokasi">Buka Peta</a>
-                </div>
-            </div>`;
-        });
+        if (Object.keys(data).length === 0) {
+            html = "<p style='text-align:center; color:#888; padding:20px;'>Belum ada absen hari ini.</p>";
+        } else {
+            Object.keys(data).reverse().forEach(k => {
+                const d = data[k];
+                if (!d.nama) return;
+                const gps = d.gps_active ? `<span class="gps-aktif">● Aktif</span>` : `<span class="gps-mati">⚠️ Mati</span>`;
+                const gmaps = `https://www.google.com/maps?q=${d.lat || 0},${d.lon || 0}`;
+                html += `
+                <div class="absen-item">
+                    <img src="${d.foto || ''}" alt="Foto Absen" onerror="this.src='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='">
+                    <div class="item-info">
+                        <div class="item-nama">${d.nama} (${d.status || "-"})</div>
+                        <div class="item-detail">Waktu: ${d.waktu || "-"}</div>
+                        <div class="item-detail">Update: ${d.lastUpdate || "-"}</div>
+                        <div class="item-detail">Keterangan: ${d.keterangan || "-"}</div>
+                        <div class="item-detail">GPS: ${gps}</div>
+                        <a href="${gmaps}" target="_blank" class="btn-lokasi">Buka Peta</a>
+                    </div>
+                </div>`;
+            });
+        }
         document.getElementById("daftarAbsen").innerHTML = html;
+    }, err => {
+        document.getElementById("daftarAbsen").innerHTML = "<p style='color:red;'>Gagal memuat data: " + err.message + "</p>";
     });
 }
-
-// Pencarian Absen
-document.getElementById("cariAbsen").addEventListener("input", function() {
-    const kata = this.value.toLowerCase();
-    const daftar = document.querySelectorAll("#daftarAbsen .absen-item");
-    daftar.forEach(el => {
-        const teks = el.textContent.toLowerCase();
-        el.style.display = teks.includes(kata) ? "flex" : "none";
-    });
-});
 
 // --- Unduh Data ---
 async function unduhDataKaryawan() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFontSize(14);
-    doc.text("Daftar Data Karyawan", 14, 15);
-    doc.setFontSize(10);
-    doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 22);
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(14);
+        doc.text("Daftar Data Karyawan", 14, 15);
+        doc.setFontSize(10);
+        doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 22);
 
-    const snap = await db.ref("data_karyawan").once("value");
-    const data = snap.val() || {};
-    const rows = [];
-    Object.values(data).forEach((d, i) => rows.push([i+1, d.nama, d.hp]));
+        const snap = await db.ref("data_karyawan").once("value");
+        const data = snap.val() || {};
+        const rows = [];
+        let nomor = 1;
+        Object.values(data).forEach(d => {
+            rows.push([nomor++, d.nama || "-", d.hp || "-"]);
+        });
 
-    doc.autoTable({
-        head: [["No", "Nama", "Nomor HP"]],
-        body: rows,
-        startY: 30,
-        styles: { fontSize: 9 }
-    });
-    doc.save("Data_Karyawan.pdf");
+        doc.autoTable({
+            head: [["No", "Nama", "Nomor HP"]],
+            body: rows,
+            startY: 30,
+            styles: { fontSize: 9 }
+        });
+        doc.save("Data_Karyawan.pdf");
+    } catch (err) {
+        alert("Gagal mengunduh: " + err.message);
+    }
 }
 
 async function unduhDataAbsen() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFontSize(14);
-    doc.text("Laporan Absen Hari Ini", 14, 15);
-    doc.setFontSize(10);
-    doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 22);
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(14);
+        doc.text("Laporan Absen Hari Ini", 14, 15);
+        doc.setFontSize(10);
+        doc.text("Tanggal: " + new Date().toLocaleDateString("id-ID"), 14, 22);
 
-    const snap = await db.ref("absensi_driver").once("value");
-    const data = snap.val() || {};
-    const rows = [];
-    Object.values(data).reverse().forEach((d, i) => {
-        rows.push([
-            i+1,
-            d.nama,
-            d.status,
-            d.waktu,
-            d.keterangan || "-",
-            d.gps_active ? "Aktif" : "Tidak Aktif"
-        ]);
-    });
+        const snap = await db.ref("absensi_driver").once("value");
+        const data = snap.val() || {};
+        const rows = [];
+        let nomor = 1;
+        Object.values(data).reverse().forEach(d => {
+            rows.push([
+                nomor++,
+                d.nama || "-",
+                d.status || "-",
+                d.waktu || "-",
+                d.keterangan || "-",
+                d.gps_active ? "Aktif" : "Tidak Aktif"
+            ]);
+        });
 
-    doc.autoTable({
-        head: [["No", "Nama", "Status", "Waktu", "Keterangan", "GPS"]],
-        body: rows,
-        startY: 30,
-        styles: { fontSize: 9 }
-    });
-    doc.save("Laporan_Absen.pdf");
+        doc.autoTable({
+            head: [["No", "Nama", "Status", "Waktu", "Keterangan", "GPS"]],
+            body: rows,
+            startY: 30,
+            styles: { fontSize: 9 }
+        });
+        doc.save("Laporan_Absen.pdf");
+    } catch (err) {
+        alert("Gagal mengunduh: " + err.message);
+    }
 }
 
 // --- Edit & Hapus ---
 function bukaEdit(id, nama, hp) {
     idEdit = id;
-    document.getElementById("editNama").value = nama;
-    document.getElementById("editHp").value = hp;
+    document.getElementById("editNama").value = nama || "";
+    document.getElementById("editHp").value = hp || "";
     document.getElementById("editSandi").value = "";
     document.getElementById("modalEdit").style.display = "flex";
 }
@@ -493,12 +525,17 @@ function simpanEdit() {
     const data = { nama, hp };
     if (sandi) data.sandi = sandi;
     db.ref("data_karyawan/" + idEdit).update(data)
-    .then(() => { alert("Data diperbarui!"); tutupModalEdit(); });
+    .then(() => {
+        alert("Data diperbarui!");
+        tutupModalEdit();
+    })
+    .catch(err => alert("Gagal menyimpan: " + err.message));
 }
 
 function hapusKaryawan(id) {
-    if (!confirm("Yakin ingin menghapus?")) return;
-    db.ref("data_karyawan/" + id).remove();
+    if (!confirm("Yakin ingin menghapus data ini?")) return;
+    db.ref("data_karyawan/" + id).remove()
+    .catch(err => alert("Gagal menghapus: " + err.message));
 }
 </script>
 </body>
