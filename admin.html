@@ -119,6 +119,43 @@
         .karyawan-aksi { display:flex; gap:6px; }
         .karyawan-aksi button { padding:6px 10px; font-size:12px; width:auto; }
 
+        /* Style untuk data absen */
+        .absen-item {
+            background: #fdfdfd;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 12px;
+            border-left: 4px solid #27ae60;
+            border-bottom: 1px solid #eee;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .absen-item img {
+            width: 70px;
+            height: 70px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .absen-info { flex: 1; min-width: 200px; }
+        .absen-info b { font-size: 15px; color: #2c3e50; }
+        .absen-info p { margin: 4px 0; font-size: 13px; color: #555; }
+        .gps-aktif { color: #27ae60; font-weight: bold; }
+        .gps-mati { color: #e74c3c; font-weight: bold; }
+        .btn-lokasi {
+            display: inline-block;
+            margin-top: 5px;
+            font-size: 11px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+            border: 1px solid #3498db;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
         .modal-edit {
             display: none;
             position: fixed;
@@ -176,10 +213,16 @@
                 <button class="btn-success" onclick="tambahKaryawan()">SIMPAN DATA</button>
             </div>
 
-            <!-- Daftar Karyawan -->
+            <!-- Daftar Karyawan Terdaftar -->
             <div class="card">
-                <h3>DAFTAR KARYAWAN</h3>
+                <h3>DAFTAR KARYAWAN TERDAFTAR</h3>
                 <div id="daftarKaryawan">Memuat data...</div>
+            </div>
+
+            <!-- ✅ BAGIAN BARU: DATA YANG SUDAH ABSEN -->
+            <div class="card">
+                <h3>DATA KARYAWAN YANG SUDAH ABSEN HARI INI</h3>
+                <div id="daftarAbsenAdmin">Memuat data absen...</div>
             </div>
 
             <!-- Modal Edit Karyawan -->
@@ -204,8 +247,6 @@
         </div>
     </div>
 
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'></script>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js'></script>
     <script src='https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js'></script>
     <script src='https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js'></script>
 
@@ -231,6 +272,7 @@
                 document.getElementById('modalLogin').style.display = 'none';
                 document.getElementById('kontenAdmin').style.display = 'block';
                 muatDaftarKaryawan();
+                muatDataAbsen(); // Panggil fungsi baru
             } else {
                 alert("Kode Akses Salah!");
             }
@@ -256,12 +298,12 @@
             });
         };
 
-        // Muat Daftar Karyawan
+        // Muat Daftar Karyawan Terdaftar
         function muatDaftarKaryawan() {
             db.ref('data_karyawan').on('value', function(s) {
                 const data = s.val();
                 const wadah = document.getElementById('daftarKaryawan');
-                if (!data) return wadah.innerHTML = "<p style='text-align:center; color:#888;'>Belum ada data karyawan.</p>";
+                if (!data) return wadah.innerHTML = "<p style='text-align:center; color:#888;'>Belum ada data karyawan terdaftar.</p>";
 
                 wadah.innerHTML = "";
                 Object.keys(data).forEach(k => {
@@ -277,6 +319,51 @@
                             <button class="btn-danger" onclick="hapusKaryawan('${k}')">Hapus</button>
                         </div>
                     </div>`;
+                    wadah.insertAdjacentHTML('beforeend', html);
+                });
+            });
+        }
+
+        // ✅ FUNGSI BARU: Muat Data Absen Hari Ini
+        function muatDataAbsen() {
+            db.ref('absensi_driver').orderByKey().limitToLast(50).on('value', function(s) {
+                const wadah = document.getElementById('daftarAbsenAdmin');
+                const data = s.val();
+
+                if (!data) {
+                    wadah.innerHTML = "<p style='text-align:center; color:#888; padding:20px;'>Belum ada karyawan yang melakukan absen hari ini.</p>";
+                    return;
+                }
+
+                const kunciTerbalik = Object.keys(data).reverse();
+                wadah.innerHTML = "";
+
+                kunciTerbalik.forEach(k => {
+                    const d = data[k];
+                    if (!d.nama) return;
+
+                    const gpsStatus = d.gps_active ? 
+                        `<span class="gps-aktif">● GPS Aktif</span>` : 
+                        `<span class="gps-mati">⚠️ GPS Tidak Aktif</span>`;
+
+                    const koordinat = d.lat && d.lon ? `${d.lat}, ${d.lon}` : "Tidak tersedia";
+                    const gmapsLink = `https://www.google.com/maps?q=${d.lat},${d.lon}`;
+
+                    const html = `
+                    <div class="absen-item">
+                        <img src="${d.foto}" alt="Foto Absen" loading="lazy"/>
+                        <div class="absen-info">
+                            <b>${d.nama}</b>
+                            <p>Status: ${d.status}</p>
+                            <p>Waktu Absen: ${d.waktu}</p>
+                            <p>Update Terakhir: ${d.lastUpdate}</p>
+                            <p>Keterangan: ${d.keterangan || "-"}</p>
+                            <p>Lokasi: ${koordinat}</p>
+                            <p>${gpsStatus}</p>
+                            <a class="btn-lokasi" href="${gmapsLink}" target="_blank">Buka di Google Maps</a>
+                        </div>
+                    </div>`;
+
                     wadah.insertAdjacentHTML('beforeend', html);
                 });
             });
@@ -315,7 +402,7 @@
 
         // Hapus Karyawan
         window.hapusKaryawan = function(id) {
-            if (!confirm("Yakin ingin menghapus data ini?")) return;
+            if (!confirm("Yakin ingin menghapus data karyawan ini?")) return;
             db.ref('data_karyawan/' + id).remove();
         };
 
