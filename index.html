@@ -38,6 +38,46 @@
             line-height: 1.5;
         }
 
+        /* ✅ STYLE LOADING BARU */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid var(--utama);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--utama);
+        }
+
         /* Header */
         .header {
             background: var(--utama);
@@ -350,6 +390,12 @@
 </head>
 <body>
 
+<!-- ✅ ELEMEN LOADING BARU -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div id="loadingText" class="loading-text">Memuat...</div>
+</div>
+
 <div class="header">
     <h1>FA DIGITAL STUDIO</h1>
     <p>Sistem Absensi Karyawan</p>
@@ -482,6 +528,15 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
+// ✅ FUNGSI LOADING BARU
+function tampilkanLoading(teks = "Memuat...") {
+    document.getElementById('loadingText').textContent = teks;
+    document.getElementById('loadingOverlay').classList.add('active');
+}
+function sembunyikanLoading() {
+    document.getElementById('loadingOverlay').classList.remove('active');
+}
+
 // 🚀 Daftarkan Service Worker untuk PWA
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -585,13 +640,17 @@ function simpanLogin(data) {
 }
 
 function cekLoginTersimpan() {
-    const tersimpan = localStorage.getItem("dataKaryawan");
-    if (tersimpan) {
-        dataKaryawan = JSON.parse(tersimpan);
-        tampilkanHalamanUtama();
-        ambilLokasi();
-        muatRiwayatAbsenTabel();
-    }
+    tampilkanLoading("Memuat data...");
+    setTimeout(() => {
+        const tersimpan = localStorage.getItem("dataKaryawan");
+        if (tersimpan) {
+            dataKaryawan = JSON.parse(tersimpan);
+            tampilkanHalamanUtama();
+            ambilLokasi();
+            muatRiwayatAbsenTabel();
+        }
+        sembunyikanLoading();
+    }, 800);
 }
 
 cekLoginTersimpan();
@@ -606,6 +665,7 @@ function prosesLogin() {
         return;
     }
 
+    tampilkanLoading("Memproses login...");
     db.ref("data_karyawan").orderByChild("hp").equalTo(hp).once("value")
         .then(snap => {
             if (!snap.exists()) throw new Error("Nomor HP tidak terdaftar!");
@@ -621,7 +681,11 @@ function prosesLogin() {
             ambilLokasi();
             muatRiwayatAbsenTabel();
         })
-        .catch(err => tampilkanPopupGagal("❌ " + err.message));
+        .catch(err => {
+            sembunyikanLoading();
+            tampilkanPopupGagal("❌ " + err.message);
+        })
+        .finally(() => sembunyikanLoading());
 }
 
 // --- Tampilkan Halaman Utama ---
@@ -655,6 +719,7 @@ function ambilLokasi() {
         return;
     }
 
+    tampilkanLoading("Mengambil lokasi...");
     navigator.geolocation.getCurrentPosition(
         (hasil) => {
             const palsu = cekLokasiPalsu(hasil);
@@ -665,10 +730,12 @@ function ambilLokasi() {
                 lokasiPalsu: palsu
             };
             if (palsu) tampilkanPopupFakeGps();
+            sembunyikanLoading();
         },
         (err) => {
             posisi.gpsAktif = false;
             posisi.lokasiPalsu = false;
+            sembunyikanLoading();
             tampilkanPopupGps();
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -681,6 +748,7 @@ function bukaKamera() {
         tampilkanPopupGagal("Kamera tidak didukung di perangkat ini!");
         return;
     }
+    tampilkanLoading("Membuka kamera...");
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
         .then(stream => {
             streamKamera = stream;
@@ -689,8 +757,12 @@ function bukaKamera() {
             video.play();
             document.querySelector(".camera-area").style.display = "block";
             document.getElementById("hasilFoto").style.display = "none";
+            sembunyikanLoading();
         })
-        .catch(() => tampilkanPopupGagal("Izin akses kamera ditolak!"));
+        .catch(() => {
+            sembunyikanLoading();
+            tampilkanPopupGagal("Izin akses kamera ditolak!");
+        });
 }
 
 // --- Ambil Foto ---
@@ -752,6 +824,7 @@ function lakukanAbsen() {
         waktu_server: firebase.database.ServerValue.TIMESTAMP
     };
 
+    tampilkanLoading("Mengirim data absen...");
     document.getElementById("btnKirimAbsen").disabled = true;
     document.getElementById("btnKirimAbsen").textContent = "⏳ Mengirim...";
 
@@ -766,6 +839,7 @@ function lakukanAbsen() {
         })
         .catch(err => tampilkanPopupGagal("❌ Gagal: " + err.message))
         .finally(() => {
+            sembunyikanLoading();
             document.getElementById("btnKirimAbsen").disabled = false;
             document.getElementById("btnKirimAbsen").textContent = "KIRIM ABSENSI";
         });
@@ -817,4 +891,4 @@ cekStatusKeamanan();
 </script>
 
 </body>
-</html> 
+</html>
