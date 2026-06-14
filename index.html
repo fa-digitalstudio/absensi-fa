@@ -230,7 +230,7 @@
             display: none;
         }
 
-        /* ✅ DESAIN POPUP YANG LEBIH KEREN & MODERN */
+        /* ✅ DESAIN POPUP YANG LEBIH CANTIK & MODERN */
         .popup-overlay {
             position: fixed;
             top: 0;
@@ -245,7 +245,7 @@
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(6px);
         }
         .popup-overlay.active {
             opacity: 1;
@@ -253,71 +253,98 @@
         }
         .popup-box {
             background: linear-gradient(145deg, #ffffff, #f8fafc);
-            width: 88%;
-            max-width: 340px;
-            border-radius: 20px;
-            padding: 32px 28px;
+            width: 90%;
+            max-width: 360px;
+            border-radius: 24px;
+            padding: 36px 30px;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.1);
-            transform: scale(0.92) translateY(10px);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.2), 0 10px 25px rgba(0,0,0,0.1);
+            transform: scale(0.9) translateY(15px);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255,255,255,0.9);
         }
         .popup-overlay.active .popup-box {
             transform: scale(1) translateY(0);
         }
         .popup-icon {
-            font-size: 56px;
+            font-size: 64px;
             margin-bottom: 20px;
             line-height: 1;
         }
         .popup-icon.gps { 
             color: var(--biru);
-            filter: drop-shadow(0 2px 4px rgba(52, 152, 219, 0.25));
+            filter: drop-shadow(0 3px 6px rgba(52, 152, 219, 0.3));
         }
         .popup-icon.root { 
             color: var(--merah);
-            filter: drop-shadow(0 2px 4px rgba(231, 76, 60, 0.25));
+            filter: drop-shadow(0 3px 6px rgba(231, 76, 60, 0.3));
         }
         .popup-icon.fake { 
             color: var(--kuning);
-            filter: drop-shadow(0 2px 4px rgba(243, 156, 18, 0.25));
+            filter: drop-shadow(0 3px 6px rgba(243, 156, 18, 0.3));
+        }
+        .popup-icon.sukses { 
+            color: var(--hijau);
+            filter: drop-shadow(0 3px 6px rgba(39, 174, 96, 0.3));
+        }
+        .popup-icon.peringatan { 
+            color: var(--utama);
+            filter: drop-shadow(0 3px 6px rgba(44, 62, 80, 0.25));
+        }
+        .popup-icon.gagal { 
+            color: var(--merah);
+            filter: drop-shadow(0 3px 6px rgba(231, 76, 60, 0.3));
         }
         .popup-title {
             font-size: 22px;
             font-weight: 700;
             color: var(--utama);
             margin-bottom: 12px;
-            letter-spacing: 0.2px;
+            letter-spacing: 0.3px;
         }
         .popup-text {
-            font-size: 15px;
+            font-size: 16px;
             color: var(--abu-gelap);
             line-height: 1.7;
-            margin-bottom: 28px;
+            margin-bottom: 30px;
             font-weight: 400;
         }
+        .popup-btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
         .popup-btn {
-            padding: 12px 32px;
+            padding: 13px 30px;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            min-width: 110px;
+        }
+        .popup-btn.utama {
             background: linear-gradient(135deg, var(--utama), #34495e);
             color: #ffffff;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.2);
-            min-width: 120px;
         }
-        .popup-btn:hover {
+        .popup-btn.utama:hover {
             background: linear-gradient(135deg, #1a252f, #2c3e50);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(44, 62, 80, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(44, 62, 80, 0.2);
+        }
+        .popup-btn.batal {
+            background: #e2e8f0;
+            color: var(--utama);
+        }
+        .popup-btn.batal:hover {
+            background: #cbd5e1;
+            transform: translateY(-2px);
         }
         .popup-btn:active {
             transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
     </style>
 </head>
@@ -383,7 +410,7 @@
             </table>
         </div>
 
-        <button class="btn-keluar" onclick="prosesLogout()">🚪 Keluar Akun</button>
+        <button class="btn-keluar" onclick="konfirmasiKeluar()">🚪 Keluar Akun</button>
     </div>
 </div>
 
@@ -393,7 +420,7 @@
         <div class="popup-icon gps">📍</div>
         <h3 class="popup-title">GPS Tidak Aktif</h3>
         <p class="popup-text">Untuk mendapatkan lokasi yang akurat dan valid, harap aktifkan layanan GPS dengan mode ketelitian tinggi pada perangkat Anda terlebih dahulu.</p>
-        <button class="popup-btn" onclick="tutupPopupGps()">Mengerti</button>
+        <button class="popup-btn utama" onclick="tutupPopupGps()">Mengerti</button>
     </div>
 </div>
 
@@ -403,7 +430,7 @@
         <div class="popup-icon root">⚠️</div>
         <h3 class="popup-title">Perangkat Dimodifikasi</h3>
         <p class="popup-text">HP Anda terdeteksi sudah di-root/dimodifikasi. Demi keamanan data dan validitas absen, sistem tidak mengizinkan proses absen menggunakan perangkat ini.</p>
-        <button class="popup-btn" onclick="tutupPopupRoot()">Mengerti</button>
+        <button class="popup-btn utama" onclick="tutupPopupRoot()">Mengerti</button>
     </div>
 </div>
 
@@ -413,7 +440,40 @@
         <div class="popup-icon fake">🚫</div>
         <h3 class="popup-title">Lokasi Tidak Valid</h3>
         <p class="popup-text">Terdeteksi menggunakan aplikasi pemalsu lokasi atau sinyal GPS tidak akurat. Matikan aplikasi tersebut, gunakan lokasi asli dan aktifkan mode ketelitian tinggi untuk bisa absen.</p>
-        <button class="popup-btn" onclick="tutupPopupFakeGps()">Mengerti</button>
+        <button class="popup-btn utama" onclick="tutupPopupFakeGps()">Mengerti</button>
+    </div>
+</div>
+
+<!-- ✅ POPUP KONFIRMASI KELUAR -->
+<div id="popupKeluar" class="popup-overlay">
+    <div class="popup-box">
+        <div class="popup-icon peringatan">❓</div>
+        <h3 class="popup-title">Konfirmasi Keluar</h3>
+        <p class="popup-text">Yakin ingin keluar dari akun Anda?</p>
+        <div class="popup-btn-group">
+            <button class="popup-btn batal" onclick="tutupPopupKeluar()">Batal</button>
+            <button class="popup-btn utama" onclick="lakukanKeluar()">Ya, Keluar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ POPUP SUKSES -->
+<div id="popupSukses" class="popup-overlay">
+    <div class="popup-box">
+        <div class="popup-icon sukses">✅</div>
+        <h3 class="popup-title">Berhasil</h3>
+        <p class="popup-text" id="teksSukses">Absen berhasil dikirim!</p>
+        <button class="popup-btn utama" onclick="tutupPopupSukses()">Mengerti</button>
+    </div>
+</div>
+
+<!-- ✅ POPUP GAGAL / ERROR -->
+<div id="popupGagal" class="popup-overlay">
+    <div class="popup-box">
+        <div class="popup-icon gagal">❌</div>
+        <h3 class="popup-title">Gagal</h3>
+        <p class="popup-text" id="teksGagal">Terjadi kesalahan, silakan coba lagi.</p>
+        <button class="popup-btn utama" onclick="tutupPopupGagal()">Mengerti</button>
     </div>
 </div>
 
@@ -470,6 +530,33 @@ function tutupPopupFakeGps() {
     document.getElementById('popupFakeGps').classList.remove('active');
 }
 
+function konfirmasiKeluar() {
+    document.getElementById('popupKeluar').classList.add('active');
+}
+function tutupPopupKeluar() {
+    document.getElementById('popupKeluar').classList.remove('active');
+}
+function lakukanKeluar() {
+    tutupPopupKeluar();
+    prosesLogoutAsli();
+}
+
+function tampilkanPopupSukses(teks = "Berhasil!") {
+    document.getElementById('teksSukses').textContent = teks;
+    document.getElementById('popupSukses').classList.add('active');
+}
+function tutupPopupSukses() {
+    document.getElementById('popupSukses').classList.remove('active');
+}
+
+function tampilkanPopupGagal(teks = "Terjadi kesalahan") {
+    document.getElementById('teksGagal').textContent = teks;
+    document.getElementById('popupGagal').classList.add('active');
+}
+function tutupPopupGagal() {
+    document.getElementById('popupGagal').classList.remove('active');
+}
+
 // --- Fungsi Deteksi Perangkat Di-Root ---
 function cekPerangkatRoot() {
     const ua = navigator.userAgent.toLowerCase();
@@ -514,7 +601,10 @@ function prosesLogin() {
     const hp = document.getElementById("inputHp").value.trim();
     const sandi = document.getElementById("inputSandi").value.trim();
 
-    if (!hp || !sandi) return alert("Masukkan nomor HP dan kata sandi!");
+    if (!hp || !sandi) {
+        tampilkanPopupGagal("Masukkan nomor HP dan kata sandi!");
+        return;
+    }
 
     db.ref("data_karyawan").orderByChild("hp").equalTo(hp).once("value")
         .then(snap => {
@@ -531,7 +621,7 @@ function prosesLogin() {
             ambilLokasi();
             muatRiwayatAbsenTabel();
         })
-        .catch(err => alert("❌ " + err.message));
+        .catch(err => tampilkanPopupGagal("❌ " + err.message));
 }
 
 // --- Tampilkan Halaman Utama ---
@@ -542,8 +632,7 @@ function tampilkanHalamanUtama() {
 }
 
 // --- Proses Logout ---
-function prosesLogout() {
-    if (!confirm("Yakin ingin keluar?")) return;
+function prosesLogoutAsli() {
     catatAktivitas(dataKaryawan.nama, "logout");
     localStorage.removeItem("dataKaryawan");
     dataKaryawan = {};
@@ -589,7 +678,8 @@ function ambilLokasi() {
 // --- Buka Kamera ---
 function bukaKamera() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        return alert("Kamera tidak didukung di perangkat ini!");
+        tampilkanPopupGagal("Kamera tidak didukung di perangkat ini!");
+        return;
     }
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
         .then(stream => {
@@ -600,7 +690,7 @@ function bukaKamera() {
             document.querySelector(".camera-area").style.display = "block";
             document.getElementById("hasilFoto").style.display = "none";
         })
-        .catch(() => alert("Izin akses kamera ditolak!"));
+        .catch(() => tampilkanPopupGagal("Izin akses kamera ditolak!"));
 }
 
 // --- Ambil Foto ---
@@ -623,7 +713,10 @@ function ambilFoto() {
 
 // --- Lakukan Absen ---
 function lakukanAbsen() {
-    if (!fotoAbsen) return alert("Ambil foto bukti terlebih dahulu!");
+    if (!fotoAbsen) {
+        tampilkanPopupGagal("Ambil foto bukti terlebih dahulu!");
+        return;
+    }
     if (!posisi.gpsAktif) {
         tampilkanPopupGps();
         return;
@@ -664,14 +757,14 @@ function lakukanAbsen() {
 
     db.ref("riwayat_absen").push(data)
         .then(() => {
-            alert("✅ Absen berhasil dikirim!");
+            tampilkanPopupSukses("✅ Absen berhasil dikirim!");
             document.getElementById("keterangan").value = "";
             document.getElementById("hasilFoto").style.display = "none";
             fotoAbsen = null;
             ambilLokasi();
             muatRiwayatAbsenTabel();
         })
-        .catch(err => alert("❌ Gagal: " + err.message))
+        .catch(err => tampilkanPopupGagal("❌ Gagal: " + err.message))
         .finally(() => {
             document.getElementById("btnKirimAbsen").disabled = false;
             document.getElementById("btnKirimAbsen").textContent = "KIRIM ABSENSI";
