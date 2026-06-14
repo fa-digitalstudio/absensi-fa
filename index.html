@@ -4,17 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Absensi Karyawan - FA DIGITAL STUDIO</title>
-
-    <!-- PWA & Keamanan -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2c3e50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Absensi FA">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
     <meta http-equiv="Permissions-Policy" content="geolocation 'self'; camera 'self'">
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         :root {
@@ -50,14 +40,13 @@
         .kosong { text-align: center; padding: 30px; color: var(--teks-reduksi); font-style: italic; }
         #halamanUtama { display: none; }
         #halamanLogin { display: block; }
-        .peringatan { background: #fff3cd; border: 1px solid #ffe69c; color: #856404; padding: 12px; border-radius: 8px; margin-bottom: 16px; text-align: center; font-weight: 500; display: none; }
-        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.3s; backdrop-filter: blur(6px); }
+        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.3s; }
         .popup-overlay.active { opacity: 1; visibility: visible; }
         .popup-box { background: #ffffff; width: 90%; max-width: 360px; border-radius: 16px; padding: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         .popup-icon { font-size: 50px; margin-bottom: 15px; }
         .popup-title { font-size: 20px; font-weight: bold; margin-bottom: 12px; color: var(--utama); }
         .popup-text { font-size: 15px; margin-bottom: 20px; color: var(--abu-gelap); }
-        .popup-btn { padding: 10px 25px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; background: var(--utama); color: #fff; }
+        .popup-btn { padding: 12px 30px; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; background: var(--utama); color: #fff; }
     </style>
 </head>
 <body>
@@ -68,8 +57,6 @@
 </div>
 
 <div class="container">
-    <div id="peringatanKeamanan" class="peringatan">⚠️ Perangkat terdeteksi dimodifikasi / lokasi tidak valid</div>
-
     <div class="card" id="halamanLogin">
         <h3>Masuk ke Sistem</h3>
         <input type="text" id="inputHp" placeholder="Nomor HP" required>
@@ -84,14 +71,14 @@
             <option value="Masuk">Masuk</option>
             <option value="Pulang">Pulang</option>
         </select>
-        <textarea id="keterangan" rows="2" placeholder="Keterangan..."></textarea>
+        <textarea id="keterangan" rows="2" placeholder="Keterangan (Opsional)"></textarea>
         <button class="btn-foto" onclick="bukaKamera()">📸 Ambil Foto Bukti</button>
         <div class="camera-area">
             <video id="videoKamera" autoplay playsinline></video>
             <button class="btn-potret" onclick="ambilFoto()">📸</button>
         </div>
         <img id="hasilFoto" alt="Foto Bukti">
-        <button class="btn-kirim" id="btnKirimAbsen" onclick="lakukanAbsen()">KIRIM ABSENSI</button>
+        <button class="btn-kirim" id="btnKirimAbsen" onclick="prosesKirimAbsen()">KIRIM ABSENSI</button>
 
         <h4 style="margin-top:24px; margin-bottom:10px; color:#2c3e50;">📋 Riwayat Absen</h4>
         <div class="table-container">
@@ -121,12 +108,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js').catch(()=>{});
-    });
-}
-
 const config = {
     apiKey: "AIzaSyCMUw8KwCeSNY41i5EmmqKexzLp5RRMNoY",
     authDomain: "daftar-absen-cc868.firebaseapp.com",
@@ -137,7 +118,7 @@ const config = {
 if (!firebase.apps.length) firebase.initializeApp(config);
 const db = firebase.database();
 
-let dataKaryawan = {}, posisi = { lat: null, lon: null }, fotoAbsen = null;
+let dataKaryawan = {}, fotoAbsen = null;
 
 function tampilkanPopup(judul, teks, ikon="ℹ️") {
     document.getElementById("judulInfo").textContent = judul;
@@ -154,7 +135,7 @@ function cekLoginTersimpan() {
     if (simpan) {
         dataKaryawan = JSON.parse(simpan);
         tampilkanHalamanUtama();
-        ambilLokasiAman();
+        muatRiwayat();
     }
 }
 cekLoginTersimpan();
@@ -162,16 +143,16 @@ cekLoginTersimpan();
 function prosesLogin() {
     const hp = document.getElementById("inputHp").value.trim();
     const sandi = document.getElementById("inputSandi").value.trim();
-    if (!hp || !sandi) return tampilkanPopup("Peringatan", "Isi HP dan sandi dulu", "⚠️");
+    if (!hp || !sandi) return tampilkanPopup("Peringatan", "Isi nomor HP dan kata sandi!", "⚠️");
     db.ref("data_karyawan").orderByChild("hp").equalTo(hp).once("value")
     .then(snap => {
-        if (!snap.exists()) throw new Error("HP tidak terdaftar");
+        if (!snap.exists()) throw new Error("Nomor HP tidak terdaftar!");
         const d = Object.values(snap.val())[0];
-        if (d.sandi !== sandi) throw new Error("Sandi salah");
+        if (d.sandi !== sandi) throw new Error("Kata sandi salah!");
         dataKaryawan = d;
         localStorage.setItem("dataKaryawan", JSON.stringify(d));
         tampilkanHalamanUtama();
-        ambilLokasiAman();
+        muatRiwayat();
     })
     .catch(err => tampilkanPopup("Gagal", err.message, "❌"));
 }
@@ -180,22 +161,6 @@ function tampilkanHalamanUtama() {
     document.getElementById("halamanLogin").style.display = "none";
     document.getElementById("halamanUtama").style.display = "block";
     document.getElementById("namaPengguna").value = dataKaryawan.nama;
-    muatRiwayat();
-}
-
-function ambilLokasiAman() {
-    if (!navigator.geolocation) return tampilkanPopup("GPS", "Perangkat tidak mendukung GPS", "📍");
-    navigator.geolocation.getCurrentPosition(
-        res => {
-            posisi.lat = res.coords.latitude.toFixed(6);
-            posisi.lon = res.coords.longitude.toFixed(6);
-        },
-        err => {
-            if (err.code === 1) tampilkanPopup("Izin Lokasi", "Izinkan akses lokasi pada browser", "📍");
-            else tampilkanPopup("GPS", "Aktifkan GPS dan mode ketelitian tinggi", "📍");
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
 }
 
 function bukaKamera() {
@@ -205,7 +170,7 @@ function bukaKamera() {
         document.querySelector(".camera-area").style.display = "block";
         document.getElementById("hasilFoto").style.display = "none";
     })
-    .catch(() => tampilkanPopup("Kamera", "Izinkan akses kamera", "📸"));
+    .catch(() => tampilkanPopup("Izin Kamera", "Izinkan akses kamera di pengaturan browser!", "📸"));
 }
 
 function ambilFoto() {
@@ -220,34 +185,57 @@ function ambilFoto() {
     v.srcObject.getTracks().forEach(t => t.stop());
 }
 
-function lakukanAbsen() {
-    if (!fotoAbsen) return tampilkanPopup("Foto", "Ambil foto dulu", "📸");
-    if (!posisi.lat) return tampilkanPopup("Lokasi", "Lokasi belum didapat, coba lagi", "📍");
+// ✅ Lokasi diminta HANYA saat tombol kirim ditekan
+function prosesKirimAbsen() {
+    if (!fotoAbsen) return tampilkanPopup("Peringatan", "Ambil foto bukti terlebih dahulu!", "📸");
 
+    if (!navigator.geolocation) return tampilkanPopup("GPS", "Perangkat tidak mendukung GPS!", "📍");
+
+    tampilkanPopup("Sedang Memproses", "Mengambil lokasi, harap tunggu...", "⏳");
+
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            tutupPopup();
+            simpanAbsenKeServer(pos.coords.latitude, pos.coords.longitude);
+        },
+        (err) => {
+            tutupPopup();
+            if (err.code === 1) {
+                tampilkanPopup("Izin Lokasi", "Di bilah alamat browser, klik ikon gembok > Izinkan Lokasi > Muat ulang halaman!", "📍");
+            } else {
+                tampilkanPopup("GPS", "Aktifkan GPS, pilih mode Ketelitian Tinggi, lalu coba lagi!", "📍");
+            }
+        },
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+}
+
+function simpanAbsenKeServer(lat, lon) {
     const data = {
         nama: dataKaryawan.nama,
         hp: dataKaryawan.hp,
         status: document.getElementById("jenisAbsen").value,
-        keterangan: document.getElementById("keterangan").value || "-",
+        keterangan: document.getElementById("keterangan").value.trim() || "-",
         tanggal: new Date().toISOString().slice(0,10),
         jam: new Date().toTimeString().slice(0,8),
-        lat: posisi.lat,
-        lon: posisi.lon,
+        lat: lat.toFixed(6),
+        lon: lon.toFixed(6),
         foto: fotoAbsen,
         waktu: firebase.database.ServerValue.TIMESTAMP
     };
 
     const tombol = document.getElementById("btnKirimAbsen");
-    tombol.disabled = true; tombol.textContent = "Mengirim...";
+    tombol.disabled = true; tombol.textContent = "⏳ Mengirim...";
+
     db.ref("riwayat_absen").push(data)
     .then(() => {
-        tampilkanPopup("Berhasil", "Absen terkirim", "✅");
+        tampilkanPopup("Berhasil ✅", "Absen berhasil dikirim!", "✅");
         document.getElementById("keterangan").value = "";
         document.getElementById("hasilFoto").style.display = "none";
         fotoAbsen = null;
         muatRiwayat();
     })
-    .catch(() => tampilkanPopup("Gagal", "Coba ulang beberapa saat lagi", "❌"))
+    .catch(() => tampilkanPopup("Gagal ❌", "Terjadi kesalahan jaringan, coba lagi!", "❌"))
     .finally(() => { tombol.disabled = false; tombol.textContent = "KIRIM ABSENSI"; });
 }
 
@@ -255,7 +243,7 @@ function muatRiwayat() {
     db.ref("riwayat_absen").orderByChild("hp").equalTo(dataKaryawan.hp).limitToLast(15).on("value", snap => {
         const data = snap.val() || {};
         let html = "";
-        if (Object.keys(data).length === 0) html = "<tr><td colspan='4' class='kosong'>Belum ada data</td></tr>";
+        if (Object.keys(data).length === 0) html = "<tr><td colspan='4' class='kosong'>Belum ada riwayat absen</td></tr>";
         else Object.values(data).reverse().forEach(d => {
             html += `<tr><td>${d.tanggal}</td><td>${d.jam}</td><td class="${d.status==='Masuk'?'status-masuk':'status-pulang'}">${d.status}</td><td>${d.lat}, ${d.lon}</td></tr>`;
         });
@@ -264,10 +252,9 @@ function muatRiwayat() {
 }
 
 function konfirmasiKeluar() {
-    if (confirm("Yakin ingin keluar?")) {
+    if (confirm("Yakin ingin keluar dari akun?")) {
         localStorage.removeItem("dataKaryawan");
         dataKaryawan = {};
-        posisi = {};
         fotoAbsen = null;
         document.getElementById("halamanUtama").style.display = "none";
         document.getElementById("halamanLogin").style.display = "block";
