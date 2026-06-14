@@ -7,8 +7,8 @@ const ASSET_CACHE = [
   '/manifest.json',
   'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
   'https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js',
-  '/20260614_150526.png',
-  '/20260614_150526.png'
+  '/20260614_163211.png',
+  '/20260614_163211.png'
 ];
 
 // Pasang cache saat pertama kali dibuka
