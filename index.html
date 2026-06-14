@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Absensi Karyawan - FA DIGITAL STUDIO</title>
+
+    <!-- 🚀 Tambahan untuk PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Absensi FA">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         :root {
@@ -203,6 +214,19 @@
         /* Halaman */
         #halamanUtama { display: none; }
         #halamanLogin { display: block; }
+
+        /* Peringatan Keamanan */
+        .peringatan {
+            background: #fff3cd;
+            border: 1px solid #ffe69c;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -213,6 +237,8 @@
 </div>
 
 <div class="container">
+    <div id="peringatanKeamanan" class="peringatan">⚠️ Terdeteksi indikasi perangkat dimodifikasi / lokasi palsu!</div>
+
     <!-- Halaman Login -->
     <div class="card" id="halamanLogin">
         <h3>Masuk ke Sistem</h3>
@@ -255,10 +281,11 @@
                         <th>Keterangan</th>
                         <th>Lokasi</th>
                         <th>GPS</th>
+                        <th>Keamanan</th>
                     </tr>
                 </thead>
                 <tbody id="isiTabelRiwayat">
-                    <tr><td colspan="6" class="kosong">Belum ada riwayat absen</td></tr>
+                    <tr><td colspan="7" class="kosong">Belum ada riwayat absen</td></tr>
                 </tbody>
             </table>
         </div>
@@ -272,6 +299,15 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
+// 🚀 Daftarkan Service Worker untuk PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+            .then(reg => console.log('Service Worker terdaftar:', reg))
+            .catch(err => console.log('Gagal daftar Service Worker:', err));
+    });
+}
+
 const config = {
     apiKey: "AIzaSyCMUw8KwCeSNY41i5EmmqKexzLp5RRMNoY",
     authDomain: "daftar-absen-cc868.firebaseapp.com",
@@ -284,9 +320,60 @@ if (!firebase.apps.length) firebase.initializeApp(config);
 const db = firebase.database();
 
 let dataKaryawan = {};
-let posisi = { lat: null, lon: null, gpsAktif: false };
+let posisi = { lat: null, lon: null, gpsAktif: false, lokasiPalsu: false };
 let streamKamera = null;
 let fotoAbsen = null;
+let perangkatDiRoot = false;
+
+// --- Cek Keamanan Saat Awal ---
+cekStatusKeamanan();
+
+// --- Fungsi Deteksi Perangkat Di-Root ---
+function cekPerangkatRoot() {
+    const ua = navigator.userAgent.toLowerCase();
+    const indikatorRoot = [
+        'su', 'root', 'superuser', 'magisk', 'supersu', 'kingroot', 'framaroot',
+        'xposed', 'busybox', 'test-keys', 'androiddebug', 'debuggable'
+    ];
+
+    // Cek dari user agent
+    for (let kata of indikatorRoot) {
+        if (ua.includes(kata)) return true;
+    }
+
+    // Cek khusus Android
+    if (ua.includes('android')) {
+        if (window.navigator.appVersion.includes('Debug')) return true;
+        if (window.RootDetection || window.SU) return true;
+    }
+
+    return false;
+}
+
+// --- Fungsi Deteksi Fake GPS ---
+function cekLokasiPalsu(hasilGps) {
+    if (hasilGps.coords.isFake === true) return true;
+    const akurasi = hasilGps.coords.accuracy;
+    if (akurasi < 1 || akurasi > 2000) return true;
+    const kecepatan = hasilGps.coords.speed || 0;
+    if (kecepatan > 80) return true;
+    return false;
+}
+
+// --- Cek Status Keamanan Keseluruhan ---
+function cekStatusKeamanan() {
+    perangkatDiRoot = cekPerangkatRoot();
+    tampilkanPeringatan();
+}
+
+function tampilkanPeringatan() {
+    const el = document.getElementById('peringatanKeamanan');
+    if (perangkatDiRoot || posisi.lokasiPalsu) {
+        el.style.display = 'block';
+    } else {
+        el.style.display = 'none';
+    }
+}
 
 // --- Simpan & Cek Login ---
 function simpanLogin(data) {
@@ -351,22 +438,33 @@ function resetTampilan() {
     document.getElementById("inputHp").value = "";
     document.getElementById("inputSandi").value = "";
     document.getElementById("hasilFoto").style.display = "none";
-    document.getElementById("isiTabelRiwayat").innerHTML = "<tr><td colspan='6' class='kosong'>Belum ada riwayat absen</td></tr>";
+    document.getElementById("isiTabelRiwayat").innerHTML = "<tr><td colspan='7' class='kosong'>Belum ada riwayat absen</td></tr>";
     fotoAbsen = null;
-    posisi = { lat: null, lon: null, gpsAktif: false };
+    posisi = { lat: null, lon: null, gpsAktif: false, lokasiPalsu: false };
     tombolAbsenMati();
+    tampilkanPeringatan();
 }
 
-// --- Ambil Lokasi GPS ---
+// --- Ambil Lokasi GPS dengan Deteksi ---
 function ambilLokasi() {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+        posisi.gpsAktif = false;
+        return;
+    }
+
     navigator.geolocation.getCurrentPosition(
         hasil => {
             posisi.lat = hasil.coords.latitude.toFixed(6);
             posisi.lon = hasil.coords.longitude.toFixed(6);
             posisi.gpsAktif = true;
+            posisi.lokasiPalsu = cekLokasiPalsu(hasil);
+            tampilkanPeringatan();
         },
-        () => { posisi.gpsAktif = false; },
+        () => {
+            posisi.gpsAktif = false;
+            posisi.lokasiPalsu = false;
+            tampilkanPeringatan();
+        },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
 }
@@ -418,6 +516,13 @@ function tombolAbsenMati() {
 
 // --- Proses Kirim Absen ---
 function lakukanAbsen() {
+    // Cek keamanan sebelum kirim
+    if (perangkatDiRoot) {
+        return alert("❌ Tidak dapat mengirim absen: Perangkat terdeteksi dimodifikasi!");
+    }
+    if (posisi.lokasiPalsu) {
+        return alert("❌ Tidak dapat mengirim absen: Lokasi terdeteksi tidak asli!");
+    }
     if (!posisi.lat || !posisi.lon) {
         alert("Mengambil lokasi, tunggu sebentar...");
         ambilLokasi();
@@ -440,10 +545,13 @@ function lakukanAbsen() {
         tanggal: tgl,
         jam: jam,
         foto: fotoAbsen,
-        lat: posisi.lat,
-        lon: posisi.lon,
+        lat: Number(posisi.lat),
+        lon: Number(posisi.lon),
         gps_aktif: posisi.gpsAktif,
-        perangkat: dapatkanInfoPerangkat()
+        lokasi_palsu: posisi.lokasiPalsu,
+        perangkat_root: perangkatDiRoot,
+        perangkat: dapatkanInfoPerangkat(),
+        waktu_server: firebase.database.ServerValue.TIMESTAMP
     };
 
     db.ref("riwayat_absen").push(data)
@@ -468,12 +576,15 @@ function muatRiwayatAbsenTabel() {
             const data = snap.val() || {};
             let html = "";
             if (Object.keys(data).length === 0) {
-                html = "<tr><td colspan='6' class='kosong'>Belum ada riwayat absen</td></tr>";
+                html = "<tr><td colspan='7' class='kosong'>Belum ada riwayat absen</td></tr>";
             } else {
                 Object.keys(data).reverse().forEach(k => {
                     const d = data[k];
                     const kelas = d.status === "Masuk" ? "status-masuk" : "status-pulang";
                     const gps = d.gps_aktif ? "✅ Aktif" : "❌ Tidak";
+                    let keamanan = "✅ Aman";
+                    if (d.perangkat_root || d.lokasi_palsu) keamanan = "⚠️ Mencurigakan";
+
                     html += `
                     <tr>
                         <td>${d.tanggal || "-"}</td>
@@ -482,6 +593,7 @@ function muatRiwayatAbsenTabel() {
                         <td>${d.keterangan || "-"}</td>
                         <td>${d.lat}, ${d.lon}</td>
                         <td>${gps}</td>
+                        <td>${keamanan}</td>
                     </tr>`;
                 });
             }
