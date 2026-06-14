@@ -4,49 +4,350 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Absensi Karyawan - FA DIGITAL STUDIO</title>
-    <meta http-equiv="Permissions-Policy" content="geolocation 'self'; camera 'self'">
+
+    <!-- 🚀 Tambahan untuk PWA & Keamanan Izin -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Absensi FA">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <!-- ✅ Perbaikan izin: izinkan akses lokasi & kamera -->
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), camera=()">
+    <meta http-equiv="Feature-Policy" content="geolocation 'self'; camera 'self'">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         :root {
-            --utama: #2c3e50; --hijau: #27ae60; --kuning: #f39c12; --merah: #e74c3c;
-            --biru: #3498db; --abu: #f8f9fa; --abu-terang: #f3f4f6; --abu-gelap: #64748b;
-            --batas: #e5e7eb; --teks: #333333; --teks-reduksi: #6b7280; --putih: #ffffff;
+            --utama: #2c3e50;
+            --hijau: #27ae60;
+            --kuning: #f39c12;
+            --merah: #e74c3c;
+            --biru: #3498db;
+            --abu: #f8f9fa;
+            --abu-terang: #f3f4f6;
+            --abu-gelap: #64748b;
+            --batas: #e5e7eb;
+            --teks: #333333;
+            --teks-reduksi: #6b7280;
+            --putih: #ffffff;
         }
-        body { background: var(--abu); color: var(--teks); line-height: 1.5; }
-        .header { background: var(--utama); color: var(--putih); padding: 24px 20px; border-radius: 0 0 20px 20px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+
+        body {
+            background: var(--abu);
+            color: var(--teks);
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            background: var(--utama);
+            color: var(--putih);
+            padding: 24px 20px;
+            border-radius: 0 0 20px 20px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
         .header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
         .header p { font-size: 14px; opacity: 0.9; }
-        .container { max-width: 520px; margin: 24px auto; padding: 0 16px; }
-        .card { background: var(--putih); border-radius: 14px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--batas); }
-        .card h3 { text-align: center; color: var(--utama); font-size: 24px; font-weight: 700; margin-bottom: 24px; }
-        input, select, textarea { width: 100%; padding: 16px; margin: 8px 0 16px; border: 1px solid var(--batas); border-radius: 12px; font-size: 16px; background: var(--putih); color: var(--teks); }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--utama); box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.12); }
-        input::placeholder, textarea::placeholder { color: var(--teks-reduksi); }
-        .camera-area { width: 100%; max-width: 280px; margin: 16px auto; border-radius: 12px; overflow: hidden; border: 1px solid var(--batas); display: none; position: relative; }
+
+        /* Container */
+        .container {
+            max-width: 520px;
+            margin: 24px auto;
+            padding: 0 16px;
+        }
+
+        /* Card */
+        .card {
+            background: var(--putih);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--batas);
+        }
+
+        .card h3 {
+            text-align: center;
+            color: var(--utama);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        /* Input, Select, Textarea */
+        input, select, textarea {
+            width: 100%;
+            padding: 16px;
+            margin: 8px 0 16px;
+            border: 1px solid var(--batas);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--putih);
+            color: var(--teks);
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--utama);
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.12);
+        }
+        input::placeholder, textarea::placeholder {
+            color: var(--teks-reduksi);
+        }
+
+        /* Kamera & Foto */
+        .camera-area {
+            width: 100%;
+            max-width: 280px;
+            margin: 16px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--batas);
+            display: none;
+            position: relative;
+        }
         #videoKamera { width: 100%; display: block; }
-        .btn-potret { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: var(--utama); color: var(--putih); border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-        #hasilFoto { width: 160px; height: 160px; margin: 16px auto; border-radius: 50%; object-fit: cover; border: 3px solid var(--batas); display: none; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .btn-foto { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 500; background: var(--abu-terang); border: 1px solid var(--batas); cursor: pointer; margin: 8px 0 16px; text-align: left; color: var(--teks); }
-        .btn-kirim { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; background: var(--utama); color: var(--putih); transition: 0.2s; }
-        .btn-kirim:disabled { background: #94a3b8; cursor: not-allowed; }
-        .btn-keluar { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; background: var(--merah); color: var(--putih); margin-top: 20px; }
-        .table-container { overflow-x: auto; margin-top: 12px; border-radius: 8px; border: 1px solid var(--batas); }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        table th { background: var(--abu); padding: 12px 8px; text-align: left; font-weight: 600; color: var(--utama); border-bottom: 1px solid var(--batas); }
-        table td { padding: 12px 8px; border-bottom: 1px solid var(--batas); color: var(--teks); }
+        .btn-potret {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--utama);
+            color: var(--putih);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        #hasilFoto {
+            width: 160px;
+            height: 160px;
+            margin: 16px auto;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--batas);
+            display: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Tombol */
+        .btn-foto {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            background: var(--abu-terang);
+            border: 1px solid var(--batas);
+            cursor: pointer;
+            margin: 8px 0 16px;
+            text-align: left;
+            color: var(--teks);
+        }
+        .btn-kirim {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--utama);
+            color: var(--putih);
+            transition: 0.2s;
+        }
+        .btn-kirim:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+        .btn-keluar {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--merah);
+            color: var(--putih);
+            margin-top: 20px;
+        }
+
+        /* Tabel Riwayat */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--batas);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        table th {
+            background: var(--abu);
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--utama);
+            border-bottom: 1px solid var(--batas);
+        }
+        table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid var(--batas);
+            color: var(--teks);
+        }
         table tr:nth-child(even) { background: var(--putih); }
         .status-masuk { color: var(--hijau); font-weight: 500; }
         .status-pulang { color: var(--kuning); font-weight: 500; }
-        .kosong { text-align: center; padding: 30px; color: var(--teks-reduksi); font-style: italic; }
+        .kosong {
+            text-align: center;
+            padding: 30px;
+            color: var(--teks-reduksi);
+            font-style: italic;
+        }
+
+        /* Halaman */
         #halamanUtama { display: none; }
         #halamanLogin { display: block; }
-        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.3s; }
-        .popup-overlay.active { opacity: 1; visibility: visible; }
-        .popup-box { background: #ffffff; width: 90%; max-width: 360px; border-radius: 16px; padding: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .popup-icon { font-size: 50px; margin-bottom: 15px; }
-        .popup-title { font-size: 20px; font-weight: bold; margin-bottom: 12px; color: var(--utama); }
-        .popup-text { font-size: 15px; margin-bottom: 20px; color: var(--abu-gelap); }
-        .popup-btn { padding: 12px 30px; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; background: var(--utama); color: #fff; }
+
+        /* Peringatan Keamanan */
+        .peringatan {
+            background: #fff3cd;
+            border: 1px solid #ffe69c;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        /* ✅ DESAIN POPUP YANG LEBIH CANTIK & MODERN */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(6px);
+        }
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .popup-box {
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            width: 90%;
+            max-width: 360px;
+            border-radius: 24px;
+            padding: 36px 30px;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.2), 0 10px 25px rgba(0,0,0,0.1);
+            transform: scale(0.9) translateY(15px);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255,255,255,0.9);
+        }
+        .popup-overlay.active .popup-box {
+            transform: scale(1) translateY(0);
+        }
+        .popup-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            line-height: 1;
+        }
+        .popup-icon.gps { 
+            color: var(--biru);
+            filter: drop-shadow(0 3px 6px rgba(52, 152, 219, 0.3));
+        }
+        .popup-icon.root { 
+            color: var(--merah);
+            filter: drop-shadow(0 3px 6px rgba(231, 76, 60, 0.3));
+        }
+        .popup-icon.fake { 
+            color: var(--kuning);
+            filter: drop-shadow(0 3px 6px rgba(243, 156, 18, 0.3));
+        }
+        .popup-icon.sukses { 
+            color: var(--hijau);
+            filter: drop-shadow(0 3px 6px rgba(39, 174, 96, 0.3));
+        }
+        .popup-icon.peringatan { 
+            color: var(--utama);
+            filter: drop-shadow(0 3px 6px rgba(44, 62, 80, 0.25));
+        }
+        .popup-icon.gagal { 
+            color: var(--merah);
+            filter: drop-shadow(0 3px 6px rgba(231, 76, 60, 0.3));
+        }
+        .popup-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--utama);
+            margin-bottom: 12px;
+            letter-spacing: 0.3px;
+        }
+        .popup-text {
+            font-size: 16px;
+            color: var(--abu-gelap);
+            line-height: 1.7;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+        .popup-btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .popup-btn {
+            padding: 13px 30px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            min-width: 110px;
+        }
+        .popup-btn.utama {
+            background: linear-gradient(135deg, var(--utama), #34495e);
+            color: #ffffff;
+        }
+        .popup-btn.utama:hover {
+            background: linear-gradient(135deg, #1a252f, #2c3e50);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(44, 62, 80, 0.2);
+        }
+        .popup-btn.batal {
+            background: #e2e8f0;
+            color: var(--utama);
+        }
+        .popup-btn.batal:hover {
+            background: #cbd5e1;
+            transform: translateY(-2px);
+        }
+        .popup-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
     </style>
 </head>
 <body>
@@ -57,6 +358,10 @@
 </div>
 
 <div class="container">
+    <!-- Peringatan Keamanan -->
+    <div id="peringatanKeamanan" class="peringatan">⚠️ Terdeteksi indikasi perangkat dimodifikasi / lokasi palsu!</div>
+
+    <!-- Halaman Login -->
     <div class="card" id="halamanLogin">
         <h3>Masuk ke Sistem</h3>
         <input type="text" id="inputHp" placeholder="Nomor HP" required>
@@ -64,42 +369,113 @@
         <button class="btn-kirim" onclick="prosesLogin()">Masuk</button>
     </div>
 
+    <!-- Halaman Utama -->
     <div class="card" id="halamanUtama">
-        <h3>ABSENSI KARYAWAN</h3>
+        <h3>ABSENSI & LIVE TRACKING</h3>
+
         <input type="text" id="namaPengguna" placeholder="Nama Lengkap" readonly>
+
         <select id="jenisAbsen">
             <option value="Masuk">Masuk</option>
             <option value="Pulang">Pulang</option>
         </select>
-        <textarea id="keterangan" rows="2" placeholder="Keterangan (Opsional)"></textarea>
+
+        <textarea id="keterangan" rows="2" placeholder="Keterangan (Opsional)..."></textarea>
+
         <button class="btn-foto" onclick="bukaKamera()">📸 Ambil Foto Bukti</button>
         <div class="camera-area">
             <video id="videoKamera" autoplay playsinline></video>
             <button class="btn-potret" onclick="ambilFoto()">📸</button>
         </div>
         <img id="hasilFoto" alt="Foto Bukti">
-        <button class="btn-kirim" id="btnKirimAbsen" onclick="prosesKirimAbsen()">KIRIM ABSENSI</button>
 
-        <h4 style="margin-top:24px; margin-bottom:10px; color:#2c3e50;">📋 Riwayat Absen</h4>
+        <button class="btn-kirim" id="btnKirimAbsen" onclick="lakukanAbsen()">KIRIM ABSENSI</button>
+
+        <!-- Riwayat Absen -->
+        <h4 style="margin-top:28px; margin-bottom:12px; color:#2c3e50; font-size:17px;">📋 Riwayat Absen Saya</h4>
         <div class="table-container">
             <table>
                 <thead>
-                    <tr><th>Tanggal</th><th>Waktu</th><th>Status</th><th>Lokasi</th></tr>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Waktu</th>
+                        <th>Status</th>
+                        <th>Keterangan</th>
+                        <th>Lokasi</th>
+                        <th>GPS</th>
+                        <th>Keamanan</th>
+                    </tr>
                 </thead>
-                <tbody id="isiTabelRiwayat"><tr><td colspan="4" class="kosong">Belum ada data</td></tr></tbody>
+                <tbody id="isiTabelRiwayat">
+                    <tr><td colspan="7" class="kosong">Belum ada riwayat absen</td></tr>
+                </tbody>
             </table>
         </div>
-        <button class="btn-keluar" onclick="konfirmasiKeluar()">🚪 Keluar</button>
+
+        <button class="btn-keluar" onclick="konfirmasiKeluar()">🚪 Keluar Akun</button>
     </div>
 </div>
 
-<!-- Popup -->
-<div id="popupInfo" class="popup-overlay">
+<!-- ✅ POPUP PERINGATAN GPS TIDAK AKTIF -->
+<div id="popupGps" class="popup-overlay">
     <div class="popup-box">
-        <div class="popup-icon" id="iconInfo">ℹ️</div>
-        <h3 class="popup-title" id="judulInfo">Informasi</h3>
-        <p class="popup-text" id="teksInfo"></p>
-        <button class="popup-btn" onclick="tutupPopup()">Mengerti</button>
+        <div class="popup-icon gps">📍</div>
+        <h3 class="popup-title">GPS Tidak Aktif / Izin Ditolak</h3>
+        <p class="popup-text">Aktifkan GPS dengan mode ketelitian tinggi, tutup aplikasi melayang/aplikasi lain yang menutupi layar, lalu izinkan akses lokasi di pengaturan browser.</p>
+        <button class="popup-btn utama" onclick="tutupPopupGps()">Mengerti</button>
+    </div>
+</div>
+
+<!-- ✅ POPUP PERINGATAN HP SUDAH DI-ROOT -->
+<div id="popupRoot" class="popup-overlay">
+    <div class="popup-box">
+        <div class="popup-icon root">⚠️</div>
+        <h3 class="popup-title">Perangkat Dimodifikasi</h3>
+        <p class="popup-text">HP Anda terdeteksi sudah di-root/dimodifikasi. Demi keamanan data dan validitas absen, sistem tidak mengizinkan proses absen menggunakan perangkat ini.</p>
+        <button class="popup-btn utama" onclick="tutupPopupRoot()">Mengerti</button>
+    </div>
+</div>
+
+<!-- ✅ POPUP PERINGATAN FAKE GPS / LOKASI TIDAK VALID -->
+<div id="popupFakeGps" class="popup-overlay">
+    <div class="popup-box">
+        <div class="popup-icon fake">🚫</div>
+        <h3 class="popup-title">Lokasi Tidak Valid</h3>
+        <p class="popup-text">Terdeteksi menggunakan aplikasi pemalsu lokasi atau sinyal GPS tidak akurat. Matikan aplikasi tersebut, gunakan lokasi asli dan aktifkan mode ketelitian tinggi untuk bisa absen.</p>
+        <button class="popup-btn utama" onclick="tutupPopupFakeGps()">Mengerti</button>
+    </div>
+</div>
+
+<!-- ✅ POPUP KONFIRMASI KELUAR -->
+<div id="popupKeluar" class="popup-overlay">
+    <div class="popup-box">
+        <div class="popup-icon peringatan">❓</div>
+        <h3 class="popup-title">Konfirmasi Keluar</h3>
+        <p class="popup-text">Yakin ingin keluar dari akun Anda?</p>
+        <div class="popup-btn-group">
+            <button class="popup-btn batal" onclick="tutupPopupKeluar()">Batal</button>
+            <button class="popup-btn utama" onclick="lakukanKeluar()">Ya, Keluar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ POPUP SUKSES -->
+<div id="popupSukses" class="popup-overlay">
+    <div class="popup-box">
+        <div class="popup-icon sukses">✅</div>
+        <h3 class="popup-title">Berhasil</h3>
+        <p class="popup-text" id="teksSukses">Absen berhasil dikirim!</p>
+        <button class="popup-btn utama" onclick="tutupPopupSukses()">Mengerti</button>
+    </div>
+</div>
+
+<!-- ✅ POPUP GAGAL / ERROR -->
+<div id="popupGagal" class="popup-overlay">
+    <div class="popup-box">
+        <div class="popup-icon gagal">❌</div>
+        <h3 class="popup-title">Gagal</h3>
+        <p class="popup-text" id="teksGagal">Terjadi kesalahan, silakan coba lagi.</p>
+        <button class="popup-btn utama" onclick="tutupPopupGagal()">Mengerti</button>
     </div>
 </div>
 
@@ -108,6 +484,15 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
+// 🚀 Daftarkan Service Worker untuk PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+            .then(reg => console.log('Service Worker terdaftar:', reg))
+            .catch(err => console.log('Gagal daftar Service Worker:', err));
+    });
+}
+
 const config = {
     apiKey: "AIzaSyCMUw8KwCeSNY41i5EmmqKexzLp5RRMNoY",
     authDomain: "daftar-absen-cc868.firebaseapp.com",
@@ -115,151 +500,334 @@ const config = {
     projectId: "daftar-absen-cc868",
     appId: "1:486404759637:web:120404fde3e0c1f1d0b4dc"
 };
+
 if (!firebase.apps.length) firebase.initializeApp(config);
 const db = firebase.database();
 
-let dataKaryawan = {}, fotoAbsen = null;
+let dataKaryawan = {};
+let posisi = { lat: null, lon: null, gpsAktif: false, lokasiPalsu: false };
+let streamKamera = null;
+let fotoAbsen = null;
+let perangkatDiRoot = false;
 
-function tampilkanPopup(judul, teks, ikon="ℹ️") {
-    document.getElementById("judulInfo").textContent = judul;
-    document.getElementById("teksInfo").textContent = teks;
-    document.getElementById("iconInfo").textContent = ikon;
-    document.getElementById("popupInfo").classList.add("active");
+// --- Fungsi Popup ---
+function tampilkanPopupGps() {
+    document.getElementById('popupGps').classList.add('active');
 }
-function tutupPopup() {
-    document.getElementById("popupInfo").classList.remove("active");
+function tutupPopupGps() {
+    document.getElementById('popupGps').classList.remove('active');
+}
+
+function tampilkanPopupRoot() {
+    document.getElementById('popupRoot').classList.add('active');
+}
+function tutupPopupRoot() {
+    document.getElementById('popupRoot').classList.remove('active');
+}
+
+function tampilkanPopupFakeGps() {
+    document.getElementById('popupFakeGps').classList.add('active');
+}
+function tutupPopupFakeGps() {
+    document.getElementById('popupFakeGps').classList.remove('active');
+}
+
+function konfirmasiKeluar() {
+    document.getElementById('popupKeluar').classList.add('active');
+}
+function tutupPopupKeluar() {
+    document.getElementById('popupKeluar').classList.remove('active');
+}
+function lakukanKeluar() {
+    tutupPopupKeluar();
+    prosesLogoutAsli();
+}
+
+function tampilkanPopupSukses(teks = "Berhasil!") {
+    document.getElementById('teksSukses').textContent = teks;
+    document.getElementById('popupSukses').classList.add('active');
+}
+function tutupPopupSukses() {
+    document.getElementById('popupSukses').classList.remove('active');
+}
+
+function tampilkanPopupGagal(teks = "Terjadi kesalahan") {
+    document.getElementById('teksGagal').textContent = teks;
+    document.getElementById('popupGagal').classList.add('active');
+}
+function tutupPopupGagal() {
+    document.getElementById('popupGagal').classList.remove('active');
+}
+
+// --- Fungsi Deteksi Perangkat Di-Root ---
+function cekPerangkatRoot() {
+    const ua = navigator.userAgent.toLowerCase();
+    const indikatorRoot = ['su', 'root', 'superuser', 'magisk', 'test-keys', 'debug'];
+    return indikatorRoot.some(kata => ua.includes(kata));
+}
+
+// --- Fungsi Deteksi Lokasi Palsu ---
+function cekLokasiPalsu(hasilGps) {
+    const akurasi = hasilGps.coords.accuracy;
+    const kecepatan = hasilGps.coords.speed || 0;
+    return akurasi < 1 || akurasi > 2000 || kecepatan > 100;
+}
+
+// --- Cek Status Keamanan ---
+function cekStatusKeamanan() {
+    perangkatDiRoot = cekPerangkatRoot();
+    const el = document.getElementById('peringatanKeamanan');
+    el.style.display = perangkatDiRoot ? 'block' : 'none';
+    if (perangkatDiRoot) tampilkanPopupRoot();
+}
+
+// --- Simpan & Cek Login ---
+function simpanLogin(data) {
+    localStorage.setItem("dataKaryawan", JSON.stringify(data));
 }
 
 function cekLoginTersimpan() {
-    const simpan = localStorage.getItem("dataKaryawan");
-    if (simpan) {
-        dataKaryawan = JSON.parse(simpan);
+    const tersimpan = localStorage.getItem("dataKaryawan");
+    if (tersimpan) {
+        dataKaryawan = JSON.parse(tersimpan);
         tampilkanHalamanUtama();
-        muatRiwayat();
+        ambilLokasi();
+        muatRiwayatAbsenTabel();
     }
 }
+
 cekLoginTersimpan();
 
+// --- Proses Login ---
 function prosesLogin() {
     const hp = document.getElementById("inputHp").value.trim();
     const sandi = document.getElementById("inputSandi").value.trim();
-    if (!hp || !sandi) return tampilkanPopup("Peringatan", "Isi nomor HP dan kata sandi!", "⚠️");
+
+    if (!hp || !sandi) {
+        tampilkanPopupGagal("Masukkan nomor HP dan kata sandi!");
+        return;
+    }
+
     db.ref("data_karyawan").orderByChild("hp").equalTo(hp).once("value")
-    .then(snap => {
-        if (!snap.exists()) throw new Error("Nomor HP tidak terdaftar!");
-        const d = Object.values(snap.val())[0];
-        if (d.sandi !== sandi) throw new Error("Kata sandi salah!");
-        dataKaryawan = d;
-        localStorage.setItem("dataKaryawan", JSON.stringify(d));
-        tampilkanHalamanUtama();
-        muatRiwayat();
-    })
-    .catch(err => tampilkanPopup("Gagal", err.message, "❌"));
+        .then(snap => {
+            if (!snap.exists()) throw new Error("Nomor HP tidak terdaftar!");
+            const data = snap.val();
+            const kunci = Object.keys(data)[0];
+            const d = data[kunci];
+            if (d.sandi !== sandi) throw new Error("Kata sandi salah!");
+
+            dataKaryawan = d;
+            simpanLogin(d);
+            catatAktivitas(d.nama, "login");
+            tampilkanHalamanUtama();
+            ambilLokasi();
+            muatRiwayatAbsenTabel();
+        })
+        .catch(err => tampilkanPopupGagal("❌ " + err.message));
 }
 
+// --- Tampilkan Halaman Utama ---
 function tampilkanHalamanUtama() {
     document.getElementById("halamanLogin").style.display = "none";
     document.getElementById("halamanUtama").style.display = "block";
     document.getElementById("namaPengguna").value = dataKaryawan.nama;
 }
 
-function bukaKamera() {
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-    .then(stream => {
-        document.getElementById("videoKamera").srcObject = stream;
-        document.querySelector(".camera-area").style.display = "block";
-        document.getElementById("hasilFoto").style.display = "none";
-    })
-    .catch(() => tampilkanPopup("Izin Kamera", "Izinkan akses kamera di pengaturan browser!", "📸"));
+// --- Proses Logout ---
+function prosesLogoutAsli() {
+    catatAktivitas(dataKaryawan.nama, "logout");
+    localStorage.removeItem("dataKaryawan");
+    dataKaryawan = {};
+    posisi = { lat: null, lon: null, gpsAktif: false, lokasiPalsu: false };
+    document.getElementById("halamanUtama").style.display = "none";
+    document.getElementById("halamanLogin").style.display = "block";
+    document.getElementById("inputHp").value = "";
+    document.getElementById("inputSandi").value = "";
+    if (streamKamera) {
+        streamKamera.getTracks().forEach(track => track.stop());
+        streamKamera = null;
+    }
 }
 
-function ambilFoto() {
-    const v = document.getElementById("videoKamera");
-    const c = document.createElement("canvas");
-    c.width = v.videoWidth; c.height = v.videoHeight;
-    c.getContext("2d").drawImage(v, 0, 0);
-    fotoAbsen = c.toDataURL("image/jpeg", 0.7);
-    document.getElementById("hasilFoto").src = fotoAbsen;
-    document.getElementById("hasilFoto").style.display = "block";
-    document.querySelector(".camera-area").style.display = "none";
-    v.srcObject.getTracks().forEach(t => t.stop());
-}
-
-// ✅ Lokasi diminta HANYA saat tombol kirim ditekan
-function prosesKirimAbsen() {
-    if (!fotoAbsen) return tampilkanPopup("Peringatan", "Ambil foto bukti terlebih dahulu!", "📸");
-
-    if (!navigator.geolocation) return tampilkanPopup("GPS", "Perangkat tidak mendukung GPS!", "📍");
-
-    tampilkanPopup("Sedang Memproses", "Mengambil lokasi, harap tunggu...", "⏳");
+// --- Ambil Lokasi GPS ---
+function ambilLokasi() {
+    if (!navigator.geolocation) {
+        posisi.gpsAktif = false;
+        tampilkanPopupGps();
+        return;
+    }
 
     navigator.geolocation.getCurrentPosition(
-        (pos) => {
-            tutupPopup();
-            simpanAbsenKeServer(pos.coords.latitude, pos.coords.longitude);
+        (hasil) => {
+            const palsu = cekLokasiPalsu(hasil);
+            posisi = {
+                lat: Number(hasil.coords.latitude.toFixed(6)),
+                lon: Number(hasil.coords.longitude.toFixed(6)),
+                gpsAktif: true,
+                lokasiPalsu: palsu
+            };
+            if (palsu) tampilkanPopupFakeGps();
         },
         (err) => {
-            tutupPopup();
-            if (err.code === 1) {
-                tampilkanPopup("Izin Lokasi", "Di bilah alamat browser, klik ikon gembok > Izinkan Lokasi > Muat ulang halaman!", "📍");
+            posisi.gpsAktif = false;
+            posisi.lokasiPalsu = false;
+            // ✅ Deteksi jika penyebabnya adalah halangan tampilan melayang
+            if (err.code === err.PERMISSION_DENIED) {
+                tampilkanPopupGagal("❌ Izin ditolak! Tutup aplikasi yang menampilkan tampilan melayang, lalu izinkan akses lokasi.");
             } else {
-                tampilkanPopup("GPS", "Aktifkan GPS, pilih mode Ketelitian Tinggi, lalu coba lagi!", "📍");
+                tampilkanPopupGps();
             }
         },
         { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
     );
 }
 
-function simpanAbsenKeServer(lat, lon) {
+// --- Buka Kamera ---
+function bukaKamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        tampilkanPopupGagal("Kamera tidak didukung di perangkat ini!");
+        return;
+    }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+        .then(stream => {
+            streamKamera = stream;
+            const video = document.getElementById("videoKamera");
+            video.srcObject = stream;
+            video.play();
+            document.querySelector(".camera-area").style.display = "block";
+            document.getElementById("hasilFoto").style.display = "none";
+        })
+        .catch(err => {
+            if (err.name === 'NotAllowedError') {
+                tampilkanPopupGagal("❌ Izin kamera ditolak! Tutup aplikasi melayang lalu izinkan akses kamera.");
+            } else {
+                tampilkanPopupGagal("Gagal mengakses kamera: " + err.message);
+            }
+        });
+}
+
+// --- Ambil Foto ---
+function ambilFoto() {
+    const video = document.getElementById("videoKamera");
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const konteks = canvas.getContext("2d");
+    konteks.drawImage(video, 0, 0, canvas.width, canvas.height);
+    fotoAbsen = canvas.toDataURL("image/jpeg", 0.8);
+    document.getElementById("hasilFoto").src = fotoAbsen;
+    document.getElementById("hasilFoto").style.display = "block";
+    document.querySelector(".camera-area").style.display = "none";
+    if (streamKamera) {
+        streamKamera.getTracks().forEach(track => track.stop());
+        streamKamera = null;
+    }
+}
+
+// --- Lakukan Absen ---
+function lakukanAbsen() {
+    if (!fotoAbsen) {
+        tampilkanPopupGagal("Ambil foto bukti terlebih dahulu!");
+        return;
+    }
+    if (!posisi.gpsAktif) {
+        tampilkanPopupGps();
+        return;
+    }
+    if (perangkatDiRoot) {
+        tampilkanPopupRoot();
+        return;
+    }
+    if (posisi.lokasiPalsu) {
+        tampilkanPopupFakeGps();
+        return;
+    }
+
+    const jenis = document.getElementById("jenisAbsen").value;
+    const keterangan = document.getElementById("keterangan").value.trim() || "-";
+    const sekarang = new Date();
+    const tgl = sekarang.toISOString().slice(0, 10);
+    const jam = sekarang.toTimeString().slice(0, 8);
+
     const data = {
         nama: dataKaryawan.nama,
         hp: dataKaryawan.hp,
-        status: document.getElementById("jenisAbsen").value,
-        keterangan: document.getElementById("keterangan").value.trim() || "-",
-        tanggal: new Date().toISOString().slice(0,10),
-        jam: new Date().toTimeString().slice(0,8),
-        lat: lat.toFixed(6),
-        lon: lon.toFixed(6),
+        status: jenis,
+        keterangan: keterangan,
+        tanggal: tgl,
+        jam: jam,
         foto: fotoAbsen,
-        waktu: firebase.database.ServerValue.TIMESTAMP
+        lat: posisi.lat,
+        lon: posisi.lon,
+        gps_aktif: posisi.gpsAktif,
+        lokasi_palsu: posisi.lokasiPalsu,
+        perangkat_root: perangkatDiRoot,
+        waktu_server: firebase.database.ServerValue.TIMESTAMP
     };
 
-    const tombol = document.getElementById("btnKirimAbsen");
-    tombol.disabled = true; tombol.textContent = "⏳ Mengirim...";
+    document.getElementById("btnKirimAbsen").disabled = true;
+    document.getElementById("btnKirimAbsen").textContent = "⏳ Mengirim...";
 
     db.ref("riwayat_absen").push(data)
-    .then(() => {
-        tampilkanPopup("Berhasil ✅", "Absen berhasil dikirim!", "✅");
-        document.getElementById("keterangan").value = "";
-        document.getElementById("hasilFoto").style.display = "none";
-        fotoAbsen = null;
-        muatRiwayat();
-    })
-    .catch(() => tampilkanPopup("Gagal ❌", "Terjadi kesalahan jaringan, coba lagi!", "❌"))
-    .finally(() => { tombol.disabled = false; tombol.textContent = "KIRIM ABSENSI"; });
-}
-
-function muatRiwayat() {
-    db.ref("riwayat_absen").orderByChild("hp").equalTo(dataKaryawan.hp).limitToLast(15).on("value", snap => {
-        const data = snap.val() || {};
-        let html = "";
-        if (Object.keys(data).length === 0) html = "<tr><td colspan='4' class='kosong'>Belum ada riwayat absen</td></tr>";
-        else Object.values(data).reverse().forEach(d => {
-            html += `<tr><td>${d.tanggal}</td><td>${d.jam}</td><td class="${d.status==='Masuk'?'status-masuk':'status-pulang'}">${d.status}</td><td>${d.lat}, ${d.lon}</td></tr>`;
+        .then(() => {
+            tampilkanPopupSukses("✅ Absen berhasil dikirim!");
+            document.getElementById("keterangan").value = "";
+            document.getElementById("hasilFoto").style.display = "none";
+            fotoAbsen = null;
+            ambilLokasi();
+            muatRiwayatAbsenTabel();
+        })
+        .catch(err => tampilkanPopupGagal("❌ Gagal: " + err.message))
+        .finally(() => {
+            document.getElementById("btnKirimAbsen").disabled = false;
+            document.getElementById("btnKirimAbsen").textContent = "KIRIM ABSENSI";
         });
-        document.getElementById("isiTabelRiwayat").innerHTML = html;
-    });
 }
 
-function konfirmasiKeluar() {
-    if (confirm("Yakin ingin keluar dari akun?")) {
-        localStorage.removeItem("dataKaryawan");
-        dataKaryawan = {};
-        fotoAbsen = null;
-        document.getElementById("halamanUtama").style.display = "none";
-        document.getElementById("halamanLogin").style.display = "block";
-    }
+// --- Muat Riwayat Absen ---
+function muatRiwayatAbsenTabel() {
+    db.ref("riwayat_absen")
+        .orderByChild("hp")
+        .equalTo(dataKaryawan.hp)
+        .limitToLast(20)
+        .on("value", snap => {
+            const data = snap.val() || {};
+            let html = "";
+            if (Object.keys(data).length === 0) {
+                html = "<tr><td colspan='7' class='kosong'>Belum ada riwayat absen</td></tr>";
+            } else {
+                Object.values(data).reverse().forEach(d => {
+                    const kelas = d.status === "Masuk" ? "status-masuk" : "status-pulang";
+                    const gps = d.gps_aktif ? "✅ Aktif" : "❌ Tidak Aktif";
+                    let keamanan = "✅ Aman";
+                    if (d.perangkat_root || d.lokasi_palsu) keamanan = "⚠️ Mencurigakan";
+                    const lokasi = d.lat && d.lon ? `${d.lat}, ${d.lon}` : "-";
+
+                    html += `
+                    <tr>
+                        <td>${d.tanggal}</td>
+                        <td>${d.jam}</td>
+                        <td class="${kelas}">${d.status}</td>
+                        <td>${d.keterangan}</td>
+                        <td>${lokasi}</td>
+                        <td>${gps}</td>
+                        <td>${keamanan}</td>
+                    </tr>`;
+                });
+            }
+            document.getElementById("isiTabelRiwayat").innerHTML = html;
+        });
 }
+
+// --- Catat Aktivitas Login/Logout ---
+function catatAktivitas(nama, jenis) {
+    const waktu = new Date().toLocaleString("id-ID");
+    db.ref("riwayat_aktivitas").push({ nama, jenis, waktu });
+}
+
+// Jalankan cek keamanan saat halaman dimuat
+cekStatusKeamanan();
 </script>
+
 </body>
 </html>
