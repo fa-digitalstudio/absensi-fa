@@ -22,8 +22,10 @@
             --hijau: #27ae60;
             --kuning: #f39c12;
             --merah: #e74c3c;
+            --biru: #3498db;
             --abu: #f8f9fa;
             --abu-terang: #f3f4f6;
+            --abu-gelap: #64748b;
             --batas: #e5e7eb;
             --teks: #333333;
             --teks-reduksi: #6b7280;
@@ -228,72 +230,94 @@
             display: none;
         }
 
-        /* ✅ POPUP STYLING */
+        /* ✅ DESAIN POPUP YANG LEBIH KEREN & MODERN */
         .popup-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(15, 23, 42, 0.75);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(4px);
         }
         .popup-overlay.active {
             opacity: 1;
             visibility: visible;
         }
         .popup-box {
-            background: #ffffff;
-            width: 85%;
-            max-width: 360px;
-            border-radius: 16px;
-            padding: 28px 24px;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            width: 88%;
+            max-width: 340px;
+            border-radius: 20px;
+            padding: 32px 28px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transform: translateY(-20px);
-            transition: transform 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.1);
+            transform: scale(0.92) translateY(10px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255,255,255,0.8);
         }
         .popup-overlay.active .popup-box {
-            transform: translateY(0);
+            transform: scale(1) translateY(0);
         }
         .popup-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
+            font-size: 56px;
+            margin-bottom: 20px;
+            line-height: 1;
         }
-        .popup-icon.gps { color: #f39c12; }
-        .popup-icon.root { color: #e74c3c; }
-        .popup-icon.fake { color: #e67e22; }
+        .popup-icon.gps { 
+            color: var(--biru);
+            filter: drop-shadow(0 2px 4px rgba(52, 152, 219, 0.25));
+        }
+        .popup-icon.root { 
+            color: var(--merah);
+            filter: drop-shadow(0 2px 4px rgba(231, 76, 60, 0.25));
+        }
+        .popup-icon.fake { 
+            color: var(--kuning);
+            filter: drop-shadow(0 2px 4px rgba(243, 156, 18, 0.25));
+        }
         .popup-title {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
-            color: #2c3e50;
+            color: var(--utama);
             margin-bottom: 12px;
+            letter-spacing: 0.2px;
         }
         .popup-text {
             font-size: 15px;
-            color: #555555;
-            line-height: 1.6;
-            margin-bottom: 24px;
+            color: var(--abu-gelap);
+            line-height: 1.7;
+            margin-bottom: 28px;
+            font-weight: 400;
         }
         .popup-btn {
-            padding: 10px 24px;
+            padding: 12px 32px;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
+            border-radius: 12px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            background: #2c3e50;
+            background: linear-gradient(135deg, var(--utama), #34495e);
             color: #ffffff;
-            transition: background 0.2s;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(44, 62, 80, 0.2);
+            min-width: 120px;
         }
         .popup-btn:hover {
-            background: #1a252f;
+            background: linear-gradient(135deg, #1a252f, #2c3e50);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(44, 62, 80, 0.25);
+        }
+        .popup-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.2);
         }
     </style>
 </head>
@@ -368,7 +392,7 @@
     <div class="popup-box">
         <div class="popup-icon gps">📍</div>
         <h3 class="popup-title">GPS Tidak Aktif</h3>
-        <p class="popup-text">Untuk mendapatkan lokasi yang akurat dan valid, harap aktifkan layanan GPS pada perangkat Anda terlebih dahulu.</p>
+        <p class="popup-text">Untuk mendapatkan lokasi yang akurat dan valid, harap aktifkan layanan GPS dengan mode ketelitian tinggi pada perangkat Anda terlebih dahulu.</p>
         <button class="popup-btn" onclick="tutupPopupGps()">Mengerti</button>
     </div>
 </div>
@@ -377,8 +401,8 @@
 <div id="popupRoot" class="popup-overlay">
     <div class="popup-box">
         <div class="popup-icon root">⚠️</div>
-        <h3 class="popup-title">Perangkat Terdeteksi Di-Root</h3>
-        <p class="popup-text">HP Anda terdeteksi sudah dimodifikasi/di-root. Demi keamanan data, sistem tidak mengizinkan proses absen menggunakan perangkat ini.</p>
+        <h3 class="popup-title">Perangkat Dimodifikasi</h3>
+        <p class="popup-text">HP Anda terdeteksi sudah di-root/dimodifikasi. Demi keamanan data dan validitas absen, sistem tidak mengizinkan proses absen menggunakan perangkat ini.</p>
         <button class="popup-btn" onclick="tutupPopupRoot()">Mengerti</button>
     </div>
 </div>
@@ -388,7 +412,7 @@
     <div class="popup-box">
         <div class="popup-icon fake">🚫</div>
         <h3 class="popup-title">Lokasi Tidak Valid</h3>
-        <p class="popup-text">Terdeteksi menggunakan aplikasi pemalsu lokasi atau sinyal GPS tidak akurat. Matikan aplikasi tersebut dan gunakan lokasi asli untuk bisa absen.</p>
+        <p class="popup-text">Terdeteksi menggunakan aplikasi pemalsu lokasi atau sinyal GPS tidak akurat. Matikan aplikasi tersebut, gunakan lokasi asli dan aktifkan mode ketelitian tinggi untuk bisa absen.</p>
         <button class="popup-btn" onclick="tutupPopupFakeGps()">Mengerti</button>
     </div>
 </div>
