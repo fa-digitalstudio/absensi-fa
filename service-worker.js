@@ -1,4 +1,4 @@
-const CACHE_NAME = 'absensi-fa-v1';
+const CACHE_NAME = 'absensi-fa-v2';
 
 // Daftar file yang akan disimpan untuk akses luring
 const ASSET_CACHE = [
