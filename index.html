@@ -5,37 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Absensi Karyawan - FA DIGITAL STUDIO</title>
 
-    <!-- 🚀 Tambahan untuk PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2c3e50">
+    <meta name="theme-color" content="#0F172A">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Absensi FA">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
 
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         :root {
-            --utama: #2c3e50;
-            --hijau: #27ae60;
-            --kuning: #f39c12;
-            --merah: #e74c3c;
-            --biru: #3498db;
-            --abu: #f8f9fa;
-            --abu-terang: #f3f4f6;
-            --abu-gelap: #64748b;
-            --batas: #e5e7eb;
-            --teks: #333333;
-            --teks-reduksi: #6b7280;
-            --putih: #ffffff;
+            /* Palet Warna Modern */
+            --primary: #4F46E5;        /* Indigo */
+            --primary-hover: #4338CA;
+            --dark: #0F172A;           /* Slate 900 */
+            --dark-light: #1E293B;     /* Slate 800 */
+            --success: #10B981;        /* Emerald */
+            --warning: #F59E0B;        /* Amber */
+            --danger: #EF4444;         /* Red */
+            --danger-hover: #DC2626;
+            
+            /* Warna Background & Elemen */
+            --bg-body: #F8FAFC;        /* Slate 50 */
+            --bg-card: #FFFFFF;
+            --border-color: #E2E8F0;   /* Slate 200 */
+            --input-bg: #F1F5F9;       /* Slate 100 */
+            
+            /* Warna Teks */
+            --text-main: #0F172A;
+            --text-muted: #64748B;     /* Slate 500 */
+            --white: #FFFFFF;
+            
+            /* Styling Soft UI */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Poppins', sans-serif; 
         }
 
         body {
-            background: var(--abu);
-            color: var(--teks);
-            line-height: 1.5;
+            background: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* ✅ STYLE LOADING DENGAN LOGO FA */
@@ -45,7 +66,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -53,201 +76,302 @@
             z-index: 99999;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .loading-overlay.active {
             opacity: 1;
             visibility: visible;
         }
         .loading-logo {
-            width: 120px;
-            height: 120px;
-            margin-bottom: 20px;
-            animation: pulse 1.8s ease-in-out infinite;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 24px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            animation: float 3s ease-in-out infinite;
         }
-        @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 0.7; }
-            50% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.7; }
+        @keyframes float {
+            0% { transform: translateY(0px) scale(0.95); opacity: 0.8; }
+            50% { transform: translateY(-10px) scale(1.05); opacity: 1; }
+            100% { transform: translateY(0px) scale(0.95); opacity: 0.8; }
         }
         .loading-text {
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--utama);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--dark);
+            letter-spacing: 0.5px;
+            animation: pulse-text 1.5s infinite;
+        }
+        @keyframes pulse-text {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
         }
 
-        /* Header */
+        /* Header Modern */
         .header {
-            background: var(--utama);
-            color: var(--putih);
-            padding: 24px 20px;
-            border-radius: 0 0 20px 20px;
+            background: linear-gradient(135deg, var(--dark), var(--dark-light));
+            color: var(--white);
+            padding: 35px 20px 60px; /* Padding bawah lebih besar untuk overlapping card */
+            border-radius: 0 0 35px 35px;
             text-align: center;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.15);
+            position: relative;
+            overflow: hidden;
         }
-        .header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
-        .header p { font-size: 14px; opacity: 0.9; }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%);
+            z-index: 1;
+        }
+        .header h1 { 
+            font-size: 24px; 
+            font-weight: 700; 
+            margin-bottom: 6px; 
+            letter-spacing: 1px;
+            position: relative; z-index: 2;
+        }
+        .header p { 
+            font-size: 14px; 
+            font-weight: 300; 
+            opacity: 0.85; 
+            position: relative; z-index: 2;
+        }
 
-        /* Container */
+        /* Container Overlapping */
         .container {
             max-width: 520px;
-            margin: 24px auto;
+            margin: -35px auto 30px; /* Menarik card ke atas menimpa header */
             padding: 0 16px;
+            position: relative;
+            z-index: 10;
         }
 
-        /* Card */
+        /* Card Modern */
         .card {
-            background: var(--putih);
-            border-radius: 14px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            border: 1px solid var(--batas);
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255,255,255,0.8);
         }
 
         .card h3 {
             text-align: center;
-            color: var(--utama);
-            font-size: 24px;
+            color: var(--dark);
+            font-size: 22px;
             font-weight: 700;
             margin-bottom: 24px;
+            position: relative;
+        }
+        .card h3::after {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 4px;
+            margin: 8px auto 0;
         }
 
         /* Input, Select, Textarea */
         input, select, textarea {
             width: 100%;
-            padding: 16px;
-            margin: 8px 0 16px;
-            border: 1px solid var(--batas);
-            border-radius: 12px;
-            font-size: 16px;
-            background: var(--putih);
-            color: var(--teks);
+            padding: 16px 18px;
+            margin: 10px 0 18px;
+            border: 2px solid transparent;
+            border-radius: 14px;
+            font-size: 15px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: var(--utama);
-            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.12);
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
         }
         input::placeholder, textarea::placeholder {
-            color: var(--teks-reduksi);
+            color: var(--text-muted);
+            font-weight: 400;
         }
 
         /* Kamera & Foto */
         .camera-area {
             width: 100%;
-            max-width: 280px;
+            max-width: 300px;
             margin: 16px auto;
-            border-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
-            border: 1px solid var(--batas);
+            border: 2px dashed var(--border-color);
+            padding: 4px;
+            background: var(--white);
             display: none;
             position: relative;
         }
-        #videoKamera { width: 100%; display: block; }
+        #videoKamera { 
+            width: 100%; 
+            display: block; 
+            border-radius: 12px;
+        }
         .btn-potret {
             position: absolute;
-            bottom: 12px;
+            bottom: 16px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--utama);
-            color: var(--putih);
-            border: none;
-            width: 50px;
-            height: 50px;
+            background: var(--primary);
+            color: var(--white);
+            border: 3px solid var(--white);
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            font-size: 20px;
-            font-weight: bold;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+        }
+        .btn-potret:active {
+            transform: translateX(-50%) scale(0.9);
         }
         #hasilFoto {
-            width: 160px;
-            height: 160px;
+            width: 140px;
+            height: 140px;
             margin: 16px auto;
-            border-radius: 50%;
+            border-radius: 20px;
             object-fit: cover;
-            border: 3px solid var(--batas);
+            border: 4px solid var(--white);
             display: none;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-md);
         }
 
         /* Tombol */
         .btn-foto {
             width: 100%;
             padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            background: var(--abu-terang);
-            border: 1px solid var(--batas);
+            border: 2px dashed var(--border-color);
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            background: var(--white);
             cursor: pointer;
             margin: 8px 0 16px;
-            text-align: left;
-            color: var(--teks);
+            text-align: center;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+        .btn-foto:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(79, 70, 229, 0.05);
         }
         .btn-kirim {
             width: 100%;
             padding: 16px;
             border: none;
-            border-radius: 12px;
-            font-size: 18px;
+            border-radius: 14px;
+            font-size: 16px;
             font-weight: 600;
+            letter-spacing: 0.5px;
             cursor: pointer;
-            background: var(--utama);
-            color: var(--putih);
-            transition: 0.2s;
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: var(--white);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+            margin-top: 8px;
+        }
+        .btn-kirim:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+        .btn-kirim:active:not(:disabled) {
+            transform: translateY(0);
         }
         .btn-kirim:disabled {
-            background: #94a3b8;
+            background: var(--text-muted);
+            box-shadow: none;
             cursor: not-allowed;
+            opacity: 0.7;
         }
         .btn-keluar {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 14px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            background: var(--merah);
-            color: var(--putih);
-            margin-top: 20px;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            margin-top: 24px;
+            transition: all 0.3s ease;
+        }
+        .btn-keluar:hover {
+            background: var(--danger);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
         }
 
-        /* Tabel Riwayat */
+        /* Tabel Riwayat Modern */
         .table-container {
             overflow-x: auto;
-            margin-top: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--batas);
+            margin-top: 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            background: var(--white);
+            box-shadow: var(--shadow-sm);
         }
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
+            white-space: nowrap;
         }
         table th {
-            background: var(--abu);
-            padding: 12px 8px;
+            background: var(--input-bg);
+            padding: 14px 12px;
             text-align: left;
             font-weight: 600;
-            color: var(--utama);
-            border-bottom: 1px solid var(--batas);
+            color: var(--dark);
+            border-bottom: 2px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
         }
         table td {
-            padding: 12px 8px;
-            border-bottom: 1px solid var(--batas);
-            color: var(--teks);
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-weight: 500;
         }
-        table tr:nth-child(even) { background: var(--putih); }
-        .status-masuk { color: var(--hijau); font-weight: 500; }
-        .status-pulang { color: var(--kuning); font-weight: 500; }
+        table tr:last-child td {
+            border-bottom: none;
+        }
+        table tr:hover td { 
+            background: var(--bg-body); 
+        }
+        .status-masuk { 
+            color: var(--success); 
+            background: rgba(16, 185, 129, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .status-pulang { 
+            color: var(--warning); 
+            background: rgba(245, 158, 11, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
         .kosong {
             text-align: center;
-            padding: 30px;
-            color: var(--teks-reduksi);
+            padding: 40px !important;
+            color: var(--text-muted);
             font-style: italic;
         }
 
@@ -257,95 +381,71 @@
 
         /* Peringatan Keamanan */
         .peringatan {
-            background: #fff3cd;
-            border: 1px solid #ffe69c;
-            color: #856404;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 16px;
+            background: #FEF3C7;
+            border: 1px solid #FDE68A;
+            color: #92400E;
+            padding: 14px;
+            border-radius: 14px;
+            margin-bottom: 20px;
             text-align: center;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 14px;
             display: none;
+            box-shadow: var(--shadow-sm);
         }
 
-        /* ✅ DESAIN POPUP YANG LEBIH CANTIK & MODERN */
+        /* ✅ POPUP YANG LEBIH MODERN & ELEGANT */
         .popup-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.6);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            backdrop-filter: blur(6px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
         .popup-overlay.active {
             opacity: 1;
             visibility: visible;
         }
         .popup-box {
-            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            background: var(--white);
             width: 90%;
-            max-width: 360px;
-            border-radius: 24px;
-            padding: 36px 30px;
+            max-width: 380px;
+            border-radius: 28px;
+            padding: 40px 30px;
             text-align: center;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.2), 0 10px 25px rgba(0,0,0,0.1);
-            transform: scale(0.9) translateY(15px);
-            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 1px solid rgba(255,255,255,0.9);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .popup-overlay.active .popup-box {
             transform: scale(1) translateY(0);
         }
         .popup-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
+            font-size: 60px;
+            margin-bottom: 16px;
             line-height: 1;
-        }
-        .popup-icon.gps { 
-            color: var(--biru);
-            filter: drop-shadow(0 3px 6px rgba(52, 152, 219, 0.3));
-        }
-        .popup-icon.root { 
-            color: var(--merah);
-            filter: drop-shadow(0 3px 6px rgba(231, 76, 60, 0.3));
-        }
-        .popup-icon.fake { 
-            color: var(--kuning);
-            filter: drop-shadow(0 3px 6px rgba(243, 156, 18, 0.3));
-        }
-        .popup-icon.sukses { 
-            color: var(--hijau);
-            filter: drop-shadow(0 3px 6px rgba(39, 174, 96, 0.3));
-        }
-        .popup-icon.peringatan { 
-            color: var(--utama);
-            filter: drop-shadow(0 3px 6px rgba(44, 62, 80, 0.25));
-        }
-        .popup-icon.gagal { 
-            color: var(--merah);
-            filter: drop-shadow(0 3px 6px rgba(231, 76, 60, 0.3));
         }
         .popup-title {
             font-size: 22px;
             font-weight: 700;
-            color: var(--utama);
+            color: var(--dark);
             margin-bottom: 12px;
-            letter-spacing: 0.3px;
         }
         .popup-text {
-            font-size: 16px;
-            color: var(--abu-gelap);
-            line-height: 1.7;
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.6;
             margin-bottom: 30px;
-            font-weight: 400;
         }
         .popup-btn-group {
             display: flex;
@@ -353,88 +453,87 @@
             justify-content: center;
         }
         .popup-btn {
-            padding: 13px 30px;
+            padding: 14px 24px;
             border: none;
             border-radius: 14px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-            min-width: 110px;
+            transition: all 0.2s ease;
+            width: 100%;
         }
         .popup-btn.utama {
-            background: linear-gradient(135deg, var(--utama), #34495e);
-            color: #ffffff;
+            background: var(--dark);
+            color: var(--white);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
         }
         .popup-btn.utama:hover {
-            background: linear-gradient(135deg, #1a252f, #2c3e50);
+            background: var(--dark-light);
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(44, 62, 80, 0.2);
         }
         .popup-btn.batal {
-            background: #e2e8f0;
-            color: var(--utama);
+            background: var(--input-bg);
+            color: var(--text-main);
         }
         .popup-btn.batal:hover {
-            background: #cbd5e1;
-            transform: translateY(-2px);
+            background: var(--border-color);
         }
-        .popup-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
+        
+        /* Pewarnaan Khusus Ikon Popup */
+        .popup-icon.gps { color: #3B82F6; }
+        .popup-icon.root { color: var(--danger); }
+        .popup-icon.fake { color: var(--warning); }
+        .popup-icon.sukses { color: var(--success); }
+        .popup-icon.peringatan { color: var(--dark); }
+        .popup-icon.gagal { color: var(--danger); }
     </style>
 </head>
 <body>
 
-<!-- ✅ ELEMEN LOADING DENGAN LOGO FA -->
 <div id="loadingOverlay" class="loading-overlay">
-    <img src="20260614_163211.png" alt="FA Digital Studio" class="loading-logo">
-    <div id="loadingText" class="loading-text">Sabar Yah😇 Sedang Membuat...</div>
+    <img src="20260614_163211.png" alt="FA Digital Studio" class="loading-logo" onerror="this.style.display='none'">
+    <div id="loadingText" class="loading-text">Sabar Yah 😇 Sedang Memproses...</div>
 </div>
 
 <div class="header">
     <h1>FA DIGITAL STUDIO</h1>
-    <p>Sistem Absensi Karyawan</p>
+    <p>Sistem Absensi & Live Tracking</p>
 </div>
 
 <div class="container">
-    <!-- Peringatan Keamanan -->
     <div id="peringatanKeamanan" class="peringatan">⚠️ Terdeteksi indikasi perangkat dimodifikasi / lokasi palsu!</div>
 
-    <!-- Halaman Login -->
     <div class="card" id="halamanLogin">
-        <h3>Masuk ke Sistem</h3>
-        <input type="text" id="inputHp" placeholder="Nomor HP" required>
-        <input type="password" id="inputSandi" placeholder="Kata Sandi" required>
-        <button class="btn-kirim" onclick="prosesLogin()">Masuk</button>
+        <h3>Portal Masuk</h3>
+        <input type="text" id="inputHp" placeholder="Masukkan Nomor HP" autocomplete="off" required>
+        <input type="password" id="inputSandi" placeholder="Masukkan Kata Sandi" required>
+        <button class="btn-kirim" onclick="prosesLogin()">Masuk Sekarang</button>
     </div>
 
-    <!-- Halaman Utama -->
     <div class="card" id="halamanUtama">
-        <h3>ABSENSI & LIVE TRACKING</h3>
+        <h3>Formulir Kehadiran</h3>
 
         <input type="text" id="namaPengguna" placeholder="Nama Lengkap" readonly>
 
         <select id="jenisAbsen">
-            <option value="Masuk">Masuk</option>
-            <option value="Pulang">Pulang</option>
+            <option value="Masuk">Jam Masuk</option>
+            <option value="Pulang">Jam Pulang</option>
         </select>
 
-        <textarea id="keterangan" rows="2" placeholder="Keterangan (Opsional)..."></textarea>
+        <textarea id="keterangan" rows="2" placeholder="Tambahkan catatan/keterangan (Opsional)"></textarea>
 
-        <button class="btn-foto" onclick="bukaKamera()">📸 Ambil Foto Bukti</button>
+        <button class="btn-foto" onclick="bukaKamera()">📸 Aktifkan Kamera Bukti</button>
         <div class="camera-area">
             <video id="videoKamera" autoplay playsinline></video>
             <button class="btn-potret" onclick="ambilFoto()">📸</button>
         </div>
         <img id="hasilFoto" alt="Foto Bukti">
 
-        <button class="btn-kirim" id="btnKirimAbsen" onclick="lakukanAbsen()">KIRIM ABSENSI</button>
+        <button class="btn-kirim" id="btnKirimAbsen" onclick="lakukanAbsen()">KIRIM ABSENSI SAYA</button>
 
-        <!-- Riwayat Absen -->
-        <h4 style="margin-top:28px; margin-bottom:12px; color:#2c3e50; font-size:17px;">📋 Riwayat Absen Saya</h4>
+        <h4 style="margin-top:36px; margin-bottom:12px; color:var(--dark); font-size:16px; font-weight:700; display: flex; align-items: center; gap: 8px;">
+            📋 Riwayat Kehadiran
+        </h4>
         <div class="table-container">
             <table>
                 <thead>
@@ -449,7 +548,7 @@
                     </tr>
                 </thead>
                 <tbody id="isiTabelRiwayat">
-                    <tr><td colspan="7" class="kosong">Belum ada riwayat absen</td></tr>
+                    <tr><td colspan="7" class="kosong">Belum ada riwayat absensi yang tersimpan</td></tr>
                 </tbody>
             </table>
         </div>
@@ -458,74 +557,66 @@
     </div>
 </div>
 
-<!-- ✅ POPUP PERINGATAN GPS TIDAK AKTIF -->
 <div id="popupGps" class="popup-overlay">
     <div class="popup-box">
         <div class="popup-icon gps">📍</div>
         <h3 class="popup-title">GPS Tidak Aktif</h3>
-        <p class="popup-text">Untuk mendapatkan lokasi yang akurat dan valid, harap aktifkan layanan GPS dengan mode ketelitian tinggi pada perangkat Anda terlebih dahulu.</p>
-        <button class="popup-btn utama" onclick="tutupPopupGps()">Mengerti</button>
+        <p class="popup-text">Sistem membutuhkan akses lokasi akurat. Harap aktifkan layanan GPS dengan mode ketelitian tinggi pada perangkat Anda.</p>
+        <button class="popup-btn utama" onclick="tutupPopupGps()">Saya Mengerti</button>
     </div>
 </div>
 
-<!-- ✅ POPUP PERINGATAN HP SUDAH DI-ROOT -->
 <div id="popupRoot" class="popup-overlay">
     <div class="popup-box">
         <div class="popup-icon root">⚠️</div>
-        <h3 class="popup-title">Perangkat Dimodifikasi</h3>
-        <p class="popup-text">HP Anda terdeteksi sudah di-root/dimodifikasi. Demi keamanan data dan validitas absen, sistem tidak mengizinkan proses absen menggunakan perangkat ini.</p>
-        <button class="popup-btn utama" onclick="tutupPopupRoot()">Mengerti</button>
+        <h3 class="popup-title">Akses Ditolak</h3>
+        <p class="popup-text">Perangkat Anda terdeteksi sudah di-root/dimodifikasi. Demi integritas data, absensi tidak dapat dilakukan di perangkat ini.</p>
+        <button class="popup-btn utama" onclick="tutupPopupRoot()">Tutup</button>
     </div>
 </div>
 
-<!-- ✅ POPUP PERINGATAN FAKE GPS / LOKASI TIDAK VALID -->
 <div id="popupFakeGps" class="popup-overlay">
     <div class="popup-box">
         <div class="popup-icon fake">🚫</div>
         <h3 class="popup-title">Lokasi Tidak Valid</h3>
-        <p class="popup-text">Terdeteksi menggunakan aplikasi pemalsu lokasi atau sinyal GPS tidak akurat. Matikan aplikasi tersebut, gunakan lokasi asli dan aktifkan mode ketelitian tinggi untuk bisa absen.</p>
-        <button class="popup-btn utama" onclick="tutupPopupFakeGps()">Mengerti</button>
+        <p class="popup-text">Terdeteksi penggunaan aplikasi pemalsu lokasi. Matikan aplikasi tersebut dan gunakan lokasi asli untuk melanjutkan.</p>
+        <button class="popup-btn utama" onclick="tutupPopupFakeGps()">Tutup</button>
     </div>
 </div>
 
-<!-- ✅ POPUP KONFIRMASI KELUAR -->
 <div id="popupKeluar" class="popup-overlay">
     <div class="popup-box">
         <div class="popup-icon peringatan">❓</div>
-        <h3 class="popup-title">Konfirmasi Keluar</h3>
-        <p class="popup-text">Yakin ingin keluar dari akun Anda?</p>
+        <h3 class="popup-title">Konfirmasi</h3>
+        <p class="popup-text">Apakah Anda yakin ingin keluar dari sistem absensi ini?</p>
         <div class="popup-btn-group">
             <button class="popup-btn batal" onclick="tutupPopupKeluar()">Batal</button>
-            <button class="popup-btn utama" onclick="lakukanKeluar()">Ya, Keluar</button>
+            <button class="popup-btn utama" style="background:var(--danger);" onclick="lakukanKeluar()">Keluar</button>
         </div>
     </div>
 </div>
 
-<!-- ✅ POPUP SUKSES -->
 <div id="popupSukses" class="popup-overlay">
     <div class="popup-box">
         <div class="popup-icon sukses">✅</div>
-        <h3 class="popup-title">Berhasil</h3>
-        <p class="popup-text" id="teksSukses">Absen berhasil dikirim!</p>
-        <button class="popup-btn utama" onclick="tutupPopupSukses()">Mengerti</button>
+        <h3 class="popup-title">Berhasil!</h3>
+        <p class="popup-text" id="teksSukses">Data absensi berhasil dikirim ke server.</p>
+        <button class="popup-btn utama" onclick="tutupPopupSukses()">Selesai</button>
     </div>
 </div>
 
-<!-- ✅ POPUP GAGAL / ERROR -->
 <div id="popupGagal" class="popup-overlay">
     <div class="popup-box">
         <div class="popup-icon gagal">❌</div>
-        <h3 class="popup-title">Gagal</h3>
-        <p class="popup-text" id="teksGagal">Terjadi kesalahan, silakan coba lagi.</p>
-        <button class="popup-btn utama" onclick="tutupPopupGagal()">Mengerti</button>
+        <h3 class="popup-title">Gagal Dikirim</h3>
+        <p class="popup-text" id="teksGagal">Terjadi kesalahan pada sistem, silakan coba beberapa saat lagi.</p>
+        <button class="popup-btn utama" onclick="tutupPopupGagal()">Tutup</button>
     </div>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-<!-- Hubungkan file terpisah -->
 <script src="firebase-config.js"></script>
 <script src="app.js"></script>
 
