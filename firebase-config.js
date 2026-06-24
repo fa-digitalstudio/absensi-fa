@@ -1,7 +1,11 @@
 // firebase-config.js
-
-!function(e,t,r,n,a,o,i){e[a]=e[a]||{};var s="",l=function(e){return atob(e)},c=function(e,t){for(var r="",n=0;n<e.length;n++)r+=String.fromCharCode(e.charCodeAt(n)^t.charCodeAt(n%t.length));return r};o=[["QUl6YVN5Q01VdzhLd0NlU05ZNDFpNUVtcXFLZXh6THA1UlJNTm9Z","YXBpS2V5"],["ZGFmdGFyLWFic2VuLWNjODY4LmZpcmViYXNlYXBwLmNvbQ==","YXV0aERvbWFpbg=="],["aHR0cHM6Ly9kYWZ0YXItYWJzZW4tY2M4NjgtZGVmYXVsdC1ydGRiLmFzaWEtc291dGhlYXN0MS5maXJlYmFzZWRhdGFiYXNlLmFwcA==","ZGF0YWJhc2VVUkw="],["ZGFmdGFyLWFic2VuLWNjODY4","cHJvamVjdElk"],["MTo0ODY0MDQ3NTk2Mzc6d2ViOjEyMDQwNGZkZTNlMGMxZjFkMGI0ZGM=","YXBwSWQ="]];for(var d=0;d<o.length;d++)e[a][l(o[d][1])]=c(l(o[d][0]),"kunciAcakBebasDiubah2026")}(window,document,navigator,location,"firebaseConfig");
-
+const firebaseConfig = {
+    apiKey: "AIzaSyCMUw8KwCeSNY41i5EmmqKexzLp5RRMNoY",
+    authDomain: "daftar-absen-cc868.firebaseapp.com",
+    databaseURL: "https://daftar-absen-cc868-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "daftar-absen-cc868",
+    appId: "1:486404759637:web:120404fde3e0c1f1d0b4dc"
+};
 
 // Inisialisasi Firebase
 if (!firebase.apps.length) {
